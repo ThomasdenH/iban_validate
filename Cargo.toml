@@ -7,9 +7,9 @@ include = [
     "Cargo.toml"
 ]
 description = "A small crate to verify IBAN account numbers"
-documentation = "This is a small crate that verifies whether an IBAN account number is correct or not."
 repository = "https://github.com/ThomasdenH/iban_check"
 license = "MIT"
+readme = "README.md"
 
 [badges]
 travis-ci = { repository = "https://travis-ci.org/ThomasdenH/iban_check" }
