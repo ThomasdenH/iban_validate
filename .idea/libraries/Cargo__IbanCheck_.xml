@@ -1,20 +1,20 @@
 <component name="libraryTable">
   <library name="Cargo &lt;IbanCheck&gt;">
     <CLASSES>
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/thread-id-3.0.0" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/kernel32-sys-0.2.2" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.21" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/memchr-1.0.1" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/winapi-0.2.8" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/thread_local-0.3.3" />
       <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/aho-corasick-0.6.3" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/lazy_static-0.2.8" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/unreachable-0.1.1" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/utf8-ranges-1.0.0" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/memchr-1.0.1" />
       <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/void-1.0.2" />
       <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.1" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.4.0" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/lazy_static-0.2.8" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/utf8-ranges-1.0.0" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.21" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/kernel32-sys-0.2.2" />
       <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/winapi-build-0.1.1" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/thread_local-0.3.3" />
-      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/winapi-0.2.8" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/unreachable-0.1.1" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.4.0" />
+      <root url="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/thread-id-3.0.0" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

@@ -11,6 +11,9 @@ documentation = "This is a small crate that verifies whether an IBAN account num
 repository = "https://github.com/ThomasdenH/iban_check"
 license = "MIT"
 
+[badges]
+travis-ci = { repository = "https://travis-ci.org/ThomasdenH/iban_check" }
+
 [lib]
 name = "iban"
 path = "src/lib.rs"
