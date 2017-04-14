@@ -1,0 +1,8 @@
+[package]
+name = "iban_validate"
+version = "0.1.0"
+authors = ["Thomas <denhollander.thomas@gmail.com>"]
+
+[lib]
+name = "iban"
+path = "src/lib.rs"
