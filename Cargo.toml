@@ -2,6 +2,10 @@
 name = "iban_validate"
 version = "0.1.0"
 authors = ["Thomas <denhollander.thomas@gmail.com>"]
+include = [
+    "**/*.rs",
+    "Cargo.toml"
+]
 
 [lib]
 name = "iban"
