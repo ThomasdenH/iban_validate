@@ -1,11 +1,15 @@
 [package]
 name = "iban_validate"
 version = "0.1.0"
-authors = ["Thomas <denhollander.thomas@gmail.com>"]
+authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 include = [
     "**/*.rs",
     "Cargo.toml"
 ]
+description = "A small crate to verify IBAN account numbers"
+documentation = "This is a small crate that verifies whether an IBAN account number is correct or not."
+repository = "https://github.com/ThomasdenH/iban_check"
+license = "MIT"
 
 [lib]
 name = "iban"
