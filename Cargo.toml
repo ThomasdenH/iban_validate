@@ -6,3 +6,7 @@ authors = ["Thomas <denhollander.thomas@gmail.com>"]
 [lib]
 name = "iban"
 path = "src/lib.rs"
+
+[dependencies]
+regex = "0.2"
+lazy_static = "0.2.8"
