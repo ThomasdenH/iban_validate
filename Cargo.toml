@@ -11,7 +11,7 @@ repository = "https://github.com/ThomasdenH/iban_check"
 documentation = "https://docs.rs/iban_validate/"
 license = "MIT"
 readme = "README.md"
-keywords = ["iban"]
+keywords = ["iban", "iban-validator"]
 
 [badges]
 travis-ci = { repository = "ThomasdenH/iban_check" }

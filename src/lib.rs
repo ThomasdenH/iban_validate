@@ -6,13 +6,14 @@ extern crate regex;
 
 use regex::Regex;
 
-/// Validate an IBAN number. The validation will return false in the following cases:
+/// Validate an IBAN number. The validation will detect the following mistakes:
 /// <ul>
-/// <li>If the length is four or less, or longer than 34.</li>
-/// <li>If the number contains characters other than A-Z or 0-9</li>
-/// <li>If A-Z is in place of 0-9 or vice versa</li>
-/// <li>If the checksum is invalid</li>
+///     <li>The length is four or less, or longer than 34.</li>
+///     <li>The number contains characters other than A-Z or 0-9</li>
+///     <li>A-Z is in place of 0-9 or vice versa</li>
+///     <li>The checksum is invalid</li>
 /// </ul>
+/// If none of these apply, the function will return true, otherwise it will return false.
 ///
 /// # Examples
 /// ```rust
@@ -52,11 +53,13 @@ fn validate_characters(address: &String) -> bool {
 fn compute_checksum(address: &String) -> u8 {
     let mut digits = Vec::new();
 
+    // Move the first four characters to the back
     let (start, end) = address.split_at(4);
     let mut changed_order = String::new();
     changed_order.push_str(end);
     changed_order.push_str(start);
 
+    // Convert the characters to digits
     for c in changed_order.chars() {
         match c {
             d @ '0'...'9' => digits.push(d.to_digit(10).unwrap()),
@@ -64,10 +67,11 @@ fn compute_checksum(address: &String) -> u8 {
                 let number = a.to_digit(36).unwrap();
                 digits.push(number / 10);
                 digits.push(number % 10);
-            },
-            _ => panic!("Invalid character in address")
+            }
+            _ => panic!("Invalid character in address"),
         }
     }
 
+    // Validate the checksum
     digits.iter().fold(0, |acc, d| (acc * 10 + d) % 97) as u8
 }
