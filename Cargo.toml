@@ -8,11 +8,13 @@ include = [
 ]
 description = "A small crate to verify IBAN account numbers"
 repository = "https://github.com/ThomasdenH/iban_check"
+documentation = "https://docs.rs/iban_validate/"
 license = "MIT"
 readme = "README.md"
+keywords = ["iban"]
 
 [badges]
-travis-ci = { repository = "https://travis-ci.org/ThomasdenH/iban_check" }
+travis-ci = { repository = "ThomasdenH/iban_check" }
 
 [lib]
 name = "iban"
