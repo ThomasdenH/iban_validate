@@ -1,6 +1,6 @@
 # iban_validate
 [![](http://meritbadge.herokuapp.com/iban_validate)](https://crates.io/crates/iban_validate)
-[![Build Status](https://travis-ci.org/ThomasdenH/iban_check.svg?branch=master)](https://travis-ci.org/ThomasdenH/iban_check)
+[![Build Status](https://travis-ci.org/ThomasdenH/iban_validate.svg?branch=master)](https://travis-ci.org/ThomasdenH/iban_validate)
 
 This is a small crate that is able to validate an IBAN account number. It will find the following mistakes:
 - An address consists of 4 or less characters
