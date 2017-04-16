@@ -8,7 +8,7 @@ This is a small crate that is able to validate an IBAN account number.
 To use this crate, just add it as an dependency:
     
     [dependencies]
-    iban_validate = "0.1.1"
+    iban_validate = "0.2.0"
 
 ## Functionality
 The crate has two functions that perform different tasks. See the [documentation](https://docs.rs/iban_validate/) for a
