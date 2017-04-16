@@ -14,7 +14,7 @@ To use this crate, just add it as an dependency:
 The crate has two functions that perform different tasks. See the [documentation](https://docs.rs/iban_validate/) for a
 complete explanation including some examples.
 
-#### validate_iban()
+### validate_iban()
 This function validates the IBAN specification
 - An address consists of 4 or less characters
 - An address consists of 35 or more characters
@@ -23,4 +23,8 @@ This function validates the IBAN specification
 - The checksum of the address is invalid
 
 ### validate_iban_country()
-This function validates the BBAN country specific part of an IBAN address.
+This function validates the BBAN country specific part of an IBAN address. It distinguishes between three different 
+results:
+- The country was recognized and the country format is valid
+- The country was recognized and the country format is invalid
+- The country was not recognized
