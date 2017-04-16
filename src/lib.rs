@@ -2,7 +2,8 @@
 mod tests;
 
 extern crate regex;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 
 use regex::Regex;
 
@@ -64,8 +65,8 @@ fn compute_checksum(address: &String) -> u8 {
                 let number = a.to_digit(36).unwrap();
                 digits.push(number / 10);
                 digits.push(number % 10);
-            },
-            _ => panic!("Invalid character in address")
+            }
+            _ => panic!("Invalid character in address"),
         }
     }
 
