@@ -1,4 +1,6 @@
 #[cfg(test)]
+extern crate spectral;
+#[cfg(test)]
 mod tests;
 
 mod countries;
@@ -46,7 +48,7 @@ pub fn validate_iban<S: Into<String>>(address: S) -> bool {
 /// valid, false otherwise.
 fn validate_characters(address: &String) -> bool {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"[A-Z]{2}\d{2}[A-Z\d]{1,30}").unwrap();
+        static ref RE: Regex = Regex::new(r"^[A-Z]{2}\d{2}[A-Z\d]{1,30}$").unwrap();
     }
     RE.is_match(address)
 }
