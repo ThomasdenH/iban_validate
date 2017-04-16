@@ -14,7 +14,7 @@ readme = "README.md"
 keywords = ["iban", "iban-validator"]
 
 [badges]
-travis-ci = { repository = "ThomasdenH/iban_check" }
+travis-ci = { repository = "ThomasdenH/iban_validate" }
 
 [lib]
 name = "iban"
