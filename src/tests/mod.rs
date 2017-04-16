@@ -1,6 +1,7 @@
 use validate_iban;
 
 #[test]
+/// This test checks whether IBANs of invalid lengths are detected to be invalid.
 fn test_length() {
     let invalid_lengths = ["DE4", "DE445001023460732493147896512575467"];
 
@@ -8,6 +9,7 @@ fn test_length() {
 }
 
 #[test]
+/// This test checks whether IBANs containing invalid characters are detected to be invalid.
 fn test_characters() {
     let invalid_characters = ["DE44@0010234607324931",
                               "DE44@0010234607324931",
@@ -20,6 +22,7 @@ fn test_characters() {
 }
 
 #[test]
+/// This test checks whether IBANs having an invalid checksum are detected as such.
 fn test_checksum() {
 
     let invalid_checksums = ["DE4450010234607324931",
@@ -33,6 +36,7 @@ fn test_checksum() {
 }
 
 #[test]
+/// This test checks whether valid IBANs are marked valid.
 fn test_valid_iban() {
 
     let valid_ibans = ["DE44500105175407324931",
@@ -45,6 +49,7 @@ fn test_valid_iban() {
     validate_all(&valid_ibans, true);
 }
 
+/// This is a helper method that asserts whether all IBANs in a list give the given result.
 fn validate_all(numbers: &[&str], result: bool) {
     for &n in numbers {
         assert_eq!(validate_iban(n), result);
