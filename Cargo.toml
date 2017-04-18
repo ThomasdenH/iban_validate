@@ -1,6 +1,6 @@
 [package]
 name = "iban_validate"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 include = [
     "**/*.rs",

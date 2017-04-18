@@ -1,13 +1,12 @@
 #[cfg(test)]
 extern crate spectral;
-#[cfg(test)]
-mod tests;
-
-mod countries;
-
 extern crate regex;
 #[macro_use]
 extern crate lazy_static;
+
+#[cfg(test)]
+mod tests;
+mod countries;
 
 use regex::Regex;
 use countries::COUNTRY_FORMATS;
@@ -59,29 +58,20 @@ fn validate_characters(address: &String) -> bool {
 /// # Panics
 /// If the address contains any characters other than 0-9 or A-Z, this function will panic.
 fn compute_checksum(address: &String) -> u8 {
-    let mut digits = Vec::new();
-
-    // Move the first four characters to the back
-    let (start, end) = address.split_at(4);
-    let mut changed_order = String::new();
-    changed_order.push_str(end);
-    changed_order.push_str(start);
-
-    // Convert the characters to digits
-    for c in changed_order.chars() {
-        match c {
-            d @ '0'...'9' => digits.push(d.to_digit(10).unwrap()),
-            a @ 'A'...'Z' => {
-                let number = a.to_digit(36).unwrap();
-                digits.push(number / 10);
-                digits.push(number % 10);
-            }
-            _ => panic!("Invalid character in address"),
-        }
-    }
-
-    // Validate the checksum
-    digits.iter().fold(0, |acc, d| (acc * 10 + d) % 97) as u8
+    address.chars()
+        // Move the first four characters to the back
+        .cycle()
+        .skip(4)
+        .take(address.len())
+        // Calculate the checksum
+        .fold(0, |acc, c| {
+            // Convert '0'-'Z' to 0-35
+            let digit = c.to_digit(36).unwrap();
+            // If the number consists of two digits, multiply by 100
+            let multiplier = if digit > 9 { 100 } else { 10 };
+            // Calculate modulo
+            (acc * multiplier + digit) % 97
+        }) as u8
 }
 
 /// The three possible results of `validate_iban_country()`.
@@ -131,9 +121,10 @@ pub fn validate_iban_country<S: Into<String>>(address: S) -> IbanCountryResult {
         if country_code_pattern == country_code_address {
             // The country code matches
             let regex = Regex::new(country_regex).unwrap();
-            return match regex.is_match(address_remainder) {
-                       true => IbanCountryResult::Valid,
-                       false => IbanCountryResult::Invalid,
+            return if regex.is_match(address_remainder) {
+                       IbanCountryResult::Valid
+                   } else {
+                       IbanCountryResult::Invalid
                    };
         }
     }
