@@ -15,7 +15,7 @@ The crate has two functions that perform different tasks. See the [documentation
 complete explanation including some examples.
 
 ### [validate_iban()](https://docs.rs/iban_validate/0.2.1/iban/fn.validate_iban.html)
-This function validates the IBAN specification
+This function validates the IBAN specification. This means that an address will be regarded as valid unless:
 - An address consists of 4 or less characters
 - An address consists of 35 or more characters
 - The address contains characters other than A-Z or 0-9
@@ -25,6 +25,6 @@ This function validates the IBAN specification
 ### [validate_iban_country()](https://docs.rs/iban_validate/0.2.1/iban/fn.validate_iban_country.html)
 This function validates the BBAN country specific part of an IBAN address. It distinguishes between three different 
 results:
-- The country was recognized and the country format is valid
-- The country was recognized and the country format is invalid
-- The country was not recognized
+- The country code was recognized and the country format is valid
+- The country code was recognized and the country format is invalid
+- The country code was not recognized
