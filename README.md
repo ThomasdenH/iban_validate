@@ -8,13 +8,13 @@ This is a small crate that is able to validate an IBAN account number.
 To use this crate, just add it as an dependency:
     
     [dependencies]
-    iban_validate = "0.2.0"
+    iban_validate = "0.2.1"
 
 ## Functionality
 The crate has two functions that perform different tasks. See the [documentation](https://docs.rs/iban_validate/) for a
 complete explanation including some examples.
 
-### [validate_iban()](https://docs.rs/iban_validate/0.2.0/iban/fn.validate_iban.html)
+### [validate_iban()](https://docs.rs/iban_validate/0.2.1/iban/fn.validate_iban.html)
 This function validates the IBAN specification
 - An address consists of 4 or less characters
 - An address consists of 35 or more characters
@@ -22,7 +22,7 @@ This function validates the IBAN specification
 - The address doesn't start with two letters, followed by two numbers
 - The checksum of the address is invalid
 
-### [validate_iban_country()](https://docs.rs/iban_validate/0.2.0/iban/fn.validate_iban_country.html)
+### [validate_iban_country()](https://docs.rs/iban_validate/0.2.1/iban/fn.validate_iban_country.html)
 This function validates the BBAN country specific part of an IBAN address. It distinguishes between three different 
 results:
 - The country was recognized and the country format is valid
