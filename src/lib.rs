@@ -22,7 +22,7 @@ assert!(valid);
 */
 
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/iban_validate/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/0.3.1")]
 
 #[cfg(test)]
 extern crate spectral;
