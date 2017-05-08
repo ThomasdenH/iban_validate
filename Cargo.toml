@@ -6,15 +6,17 @@ include = [
     "**/*.rs",
     "Cargo.toml"
 ]
-description = "A small crate to verify IBAN account numbers"
+description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
 documentation = "https://docs.rs/iban_validate/"
 license = "MIT"
 readme = "README.md"
 keywords = ["iban", "iban-validator"]
+categories = ["parsing"]
 
 [badges]
-travis-ci = { repository = "ThomasdenH/iban_validate" }
+travis-ci = { repository = "https://travis-ci.org/ThomasdenH/iban_validate" }
+appveyor = { repository = "https://ci.appveyor.com/project/ThomasdenH/iban-validate" }
 
 [lib]
 name = "iban"
