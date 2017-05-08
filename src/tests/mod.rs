@@ -1,3 +1,5 @@
+//! This module contains tests
+
 use spectral::prelude::*;
 
 use validate_iban;
