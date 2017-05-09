@@ -3,7 +3,7 @@
 
 extern crate regex;
 
-use regex::Regex;
+use regex::{RegexSet, RegexSetBuilder};
 
 static COUNTRY_FORMATS: [(&'static str, &'static str); 75] =
     [("AD", r"^\d{10}[A-Z\d]{12}$"),
@@ -82,6 +82,25 @@ static COUNTRY_FORMATS: [(&'static str, &'static str); 75] =
      ("VG", r"^\d{2}[A-Z]{4}\d{16}$"),
      ("XK", r"^\d{18}$")];
 
+lazy_static! {
+    static ref RE_COUNTRY_CODE: RegexSet = RegexSetBuilder::new(
+        COUNTRY_FORMATS.iter().map(|&(re, _)| re)
+    )
+    .build()
+    .expect("Could not compile regular expression for country codes. \
+        Please file an issue at https://github.com/ThomasdenH/iban_validate.");
+}
+
+lazy_static! {
+    static ref RE_ADDRESS_REMAINDER: RegexSet = RegexSetBuilder::new(
+        COUNTRY_FORMATS.iter().map(|&(_, re)| re)
+    )
+    .size_limit(16_000_000)
+    .build()
+    .expect("Could not compile regular expression for IBAN addresses. \
+        Please file an issue at https://github.com/ThomasdenH/iban_validate.");
+}
+
 /// The function [`validate_iban_country`] will return a variant of this enum.
 ///
 /// [`validate_iban_country`]: ./fn.validate_iban_country.html
@@ -96,16 +115,17 @@ pub enum IbanCountryResult {
     CountryUnknown,
 }
 
-/// Validate the BBAN part of an IBAN account number. This function will return one of three
-/// results:
-/// <ul>
-///     <li>If the country code is recognized and the address fits the country's format, it will
-///         return [`IbanCountryResult::Valid`].</li>
-///     <li>If the country code is recognized and the address does not fit the country BBAN format,
-///         it will return [`IbanCountryResult::Invalid`].</li>
-///     <li>If the country code is not recognized, it will return
-///         [`IbanCountryResult::CountryUnknown`].</li>
-/// </ul>
+/// Validate the BBAN part of an IBAN account number.
+///
+/// This function will return one of three results:
+///
+/// - If the country code is recognized and the address fits the country's format, it will
+///   return [`IbanCountryResult::Valid`].
+/// - If the country code is recognized and the address does not fit the country BBAN format,
+///   it will return [`IbanCountryResult::Invalid`].
+/// - If the country code is not recognized, it will return
+///   [`IbanCountryResult::CountryUnknown`].
+///
 /// Note that this check is not a substitute for [`validate_iban`] or vice versa. This function
 /// only checks the address country code and corresponding format. To verify whether the address
 /// fits the IBAN specification, you should also call [`validate_iban`].
@@ -116,6 +136,7 @@ pub enum IbanCountryResult {
 /// [`validate_iban`]: ./fn.validate_iban.html
 ///
 /// # Examples
+///
 /// ```rust
 /// use iban::validate_iban_country;
 /// use iban::IbanCountryResult;
@@ -132,18 +153,22 @@ pub enum IbanCountryResult {
 pub fn validate_iban_country(address: &str) -> IbanCountryResult {
     let (country_code_address, address_remainder) = address.split_at(2);
 
-    for &(country_code_pattern, country_regex) in COUNTRY_FORMATS.into_iter() {
-        if country_code_pattern == country_code_address {
-            // The country code matches
-            let regex = Regex::new(country_regex)
-        .expect("Could not compile regular expression. Please file an issue at \
-                    https://github.com/ThomasdenH/iban_validate.");
-            return if regex.is_match(address_remainder) {
-                       IbanCountryResult::Valid
-                   } else {
-                       IbanCountryResult::Invalid
-                   };
+    let country_match = RE_COUNTRY_CODE
+        .matches(country_code_address)
+        .iter()
+        .next();
+    if let Some(country_index) = country_match {
+        let address_match = RE_ADDRESS_REMAINDER
+            .matches(address_remainder)
+            .iter()
+            .find(|&address_index| address_index == country_index);
+
+        if address_match.is_some() {
+            IbanCountryResult::Valid
+        } else {
+            IbanCountryResult::Invalid
         }
+    } else {
+        IbanCountryResult::CountryUnknown
     }
-    IbanCountryResult::CountryUnknown
 }
