@@ -115,16 +115,17 @@ pub enum IbanCountryResult {
     CountryUnknown,
 }
 
-/// Validate the BBAN part of an IBAN account number. This function will return one of three
-/// results:
-/// <ul>
-///     <li>If the country code is recognized and the address fits the country's format, it will
-///         return [`IbanCountryResult::Valid`].</li>
-///     <li>If the country code is recognized and the address does not fit the country BBAN format,
-///         it will return [`IbanCountryResult::Invalid`].</li>
-///     <li>If the country code is not recognized, it will return
-///         [`IbanCountryResult::CountryUnknown`].</li>
-/// </ul>
+/// Validate the BBAN part of an IBAN account number.
+///
+/// This function will return one of three results:
+///
+/// - If the country code is recognized and the address fits the country's format, it will
+///   return [`IbanCountryResult::Valid`].
+/// - If the country code is recognized and the address does not fit the country BBAN format,
+///   it will return [`IbanCountryResult::Invalid`].
+/// - If the country code is not recognized, it will return
+///   [`IbanCountryResult::CountryUnknown`].
+///
 /// Note that this check is not a substitute for [`validate_iban`] or vice versa. This function
 /// only checks the address country code and corresponding format. To verify whether the address
 /// fits the IBAN specification, you should also call [`validate_iban`].
@@ -135,6 +136,7 @@ pub enum IbanCountryResult {
 /// [`validate_iban`]: ./fn.validate_iban.html
 ///
 /// # Examples
+///
 /// ```rust
 /// use iban::validate_iban_country;
 /// use iban::IbanCountryResult;
