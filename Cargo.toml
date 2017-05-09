@@ -26,4 +26,6 @@ path = "src/lib.rs"
 [dependencies]
 regex = "0.2"
 lazy_static = "0.2.8"
+
+[dev-dependencies]
 spectral = "0.6.0"
