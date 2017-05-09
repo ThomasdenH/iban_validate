@@ -1,6 +1,7 @@
 # iban_validate
-[![](http://meritbadge.herokuapp.com/iban_validate)](https://crates.io/crates/iban_validate)
-[![Build Status](https://travis-ci.org/ThomasdenH/iban_validate.svg?branch=master)](https://travis-ci.org/ThomasdenH/iban_validate)
+[![Crates.io](http://meritbadge.herokuapp.com/iban_validate)](https://crates.io/crates/iban_validate)
+[![Travis Build Status](https://travis-ci.org/ThomasdenH/iban_validate.svg?branch=master)](https://travis-ci.org/ThomasdenH/iban_validate)
+[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/ThomasdenH/iban_validate?svg=true)](https://ci.appveyor.com/project/ThomasdenH/iban-validate/build/1.0.9)
 
 This is a small crate that is able to validate an IBAN account number.
 
