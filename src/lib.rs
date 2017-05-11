@@ -1,17 +1,19 @@
-//! This crate provides an easy way to validate an IBAN. To do this, you can use the function
-//! [`parse()`]. If you want to check whether the address has a valid BBAN, you can then use
-//! [`validate_bban()`].
+//! This crate provides an easy way to validate an IBAN (International Bank Account Number). To do
+//! so, you can use the function [`parse()`]. If you want to check whether the address has a valid
+//! BBAN (Basic Bank Account Number), you can use [`validate_bban()`]. It also contains some
+//! helper methods to make handling an IBAN easier.
 //!
 //! # Example
-//! The following example does a full validation of the IBAN and BBAN format:
+//! The following example does a full validation of the IBAN and BBAN format.
 //!
 //! ```rust
-//! let account_number = "DE44500105175407324931";
-//! let valid = match account_number.parse::<iban::Iban>() {
-//!     Ok(account) => account.validate_bban() == iban::BbanResult::Valid,
-//!     Err(_) => false
-//! };
-//! assert!(valid);
+//! let account = "DE44500105175407324931".parse::<iban::Iban>()
+//!     .expect("Could not parse iban number.");
+//!
+//! assert_eq!(account.validate_bban(), iban::BbanResult::Valid);
+//! assert_eq!(account.get_country_code(), "DE");
+//! assert_eq!(account.get_check_digits(), "44");
+//! assert_eq!(account.get_bban(), "500105175407324931");
 //! ```
 //!
 //! [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
@@ -40,21 +42,21 @@ use regex::Regex;
 use iban_countries::RE_COUNTRY_CODE;
 use iban_countries::RE_ADDRESS_REMAINDER;
 
-/// Iban represents an IBAN (International Bank Account Number). To obtain it, make use of the
-/// [`parse()`] function. This will make sure the string is formatted correctly.
+/// Represents an IBAN. To obtain it, make use of the [`parse()`] function, which will make sure the
+/// string follows the ISO 13616 standard.
 ///
 /// # Examples
 /// ```rust
-/// use iban::Iban;
-///
-/// let address = "KZ86125KZT5004100100".parse::<Iban>().expect("Could not parse IBAN.");
+/// let address = "KZ86125KZT5004100100".parse::<iban::Iban>()
+///     .expect("Could not parse IBAN.");
 /// ```
 ///
 /// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Iban(String);
 
-/// Indicates that the string does not follow the IBAN specification.
+/// The result after using [`parse()`] or [`from_str()`]. It indicates that the string does not
+/// follow the IBAN specification.
 ///
 /// # Examples
 ///
@@ -70,13 +72,18 @@ pub struct Iban(String);
 ///     _ => false
 /// });
 /// ```
+///
+/// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
+/// [`from_str()`]: /struct.Iban.html#method.from_str
+///
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct ParseIbanError {
     _private: (),
 }
 
 impl Iban {
-    /// Returns the country code of an Iban.
+    /// Returns the country code of an IBAN. The country code consists of the first two letters of
+    /// an address.
     ///
     /// # Examples
     /// ```rust
@@ -91,7 +98,8 @@ impl Iban {
         country_code
     }
 
-    /// Returns the check digits of an IBAN.
+    /// Returns the check digits of an IBAN. These are the third and the fourth characters of an
+    /// address.
     ///
     /// # Examples
     /// ```rust
@@ -107,7 +115,9 @@ impl Iban {
         check_digits
     }
 
-    /// Returns the BBAN part of an IBAN.
+    /// Returns the BBAN part of an IBAN. It consists of all characters after the country code and
+    /// check digits and is country specific. To validate that it follows the correct country
+    /// format, use [`validate_bban()`].
     ///
     /// # Examples
     /// ```rust
@@ -117,14 +127,15 @@ impl Iban {
     ///     "00012030200359100100"
     /// );
     /// ```
+    ///
+    /// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
+    ///
     pub fn get_bban(&self) -> &str {
         let (_, bban) = self.split_at(4);
         bban
     }
 
-    /// Validate the BBAN part of an IBAN account number.
-    ///
-    /// This function will return one of three results:
+    /// Validates the BBAN part of an IBAN account number. It returns one of three results:
     ///
     /// - If the country code is recognized and the address fits the country's format, it will
     ///   return [`BbanResult::Valid`].
@@ -224,15 +235,18 @@ impl str::FromStr for Iban {
     /// ```rust
     /// use std::str::FromStr;
     ///
+    /// // Explicit usage
     /// let address1 = iban::Iban::from_str("DE44500105175407324931")
     ///     .expect("Could not parse IBAN!");
     ///
+    /// // Implicit usage
     /// let address2 = "DE44500105175407324931".parse::<iban::Iban>()
     ///     .expect("Could not parse IBAN!");
     /// ```
     ///
     /// # Errors
-    /// The conversion can fail if the input is not a valid IBAN. This function will check that
+    /// The conversion can fail if the input is not a valid IBAN. The function will check that none
+    /// of the following apply:
     ///
     /// - The length is four or less, or longer than 34.
     /// - The number contains characters other than A-Z or 0-9
@@ -244,7 +258,7 @@ impl str::FromStr for Iban {
     ///
     /// [`Ok`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok
     /// [`Iban`]: ./struct.Iban.html
-    /// [`validate_bban`]: ./struct.Iban.html#method.validate_bban
+    /// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
     ///
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         if Iban::validate_characters(&address) && Iban::compute_checksum(&address) == 1 {
