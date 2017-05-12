@@ -169,7 +169,8 @@ impl Iban {
     pub fn get_check_digits(&self) -> u8 {
         let (_, after_country_code) = self.split_at(2);
         let (check_digits, _) = after_country_code.split_at(2);
-        check_digits.parse()
+        check_digits
+            .parse()
             .expect("Could not parse check digits. Please create an issue at \
                 https://github.com/ThomasdenH/iban_validate.")
     }
