@@ -16,8 +16,8 @@ keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 
 [badges]
-travis-ci = { repository = "https://travis-ci.org/ThomasdenH/iban_validate" }
-appveyor = { repository = "https://ci.appveyor.com/project/ThomasdenH/iban-validate" }
+travis-ci = { repository = "ThomasdenH/iban_validate" }
+appveyor = { repository = "ThomasdenH/iban_validate" }
 
 [lib]
 name = "iban"

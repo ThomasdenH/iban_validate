@@ -7,13 +7,24 @@
 //! The following example does a full validation of the IBAN and BBAN format.
 //!
 //! ```rust
-//! let account = "DE44500105175407324931".parse::<iban::Iban>()
-//!     .expect("Could not parse iban number.");
+//! # use iban::ParseIbanError;
+//! # fn try_main() -> Result<(), ParseIbanError> {
+//! use iban::Iban;
+//! use iban::BbanResult;
 //!
-//! assert_eq!(account.validate_bban(), iban::BbanResult::Valid);
+//! let account = "DE44500105175407324931".parse::<Iban>()?;
+//!
+//! assert_eq!(account.validate_bban(), BbanResult::Valid);
 //! assert_eq!(account.get_country_code(), "DE");
-//! assert_eq!(account.get_check_digits(), "44");
+//! assert_eq!(account.get_check_digits(), 44);
 //! assert_eq!(account.get_bban(), "500105175407324931");
+//! #
+//! # Ok(())
+//! # }
+//! # fn main() {
+//! #     try_main().unwrap();
+//! # }
+//! #
 //! ```
 //!
 //! [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
@@ -38,6 +49,7 @@ use std::str;
 use std::fmt;
 use std::ops;
 use regex::Regex;
+use std::error::Error;
 
 use iban_countries::RE_COUNTRY_CODE;
 use iban_countries::RE_ADDRESS_REMAINDER;
@@ -47,16 +59,26 @@ use iban_countries::RE_ADDRESS_REMAINDER;
 ///
 /// # Examples
 /// ```rust
-/// let address = "KZ86125KZT5004100100".parse::<iban::Iban>()
-///     .expect("Could not parse IBAN.");
+/// # use iban::ParseIbanError;
+/// #
+/// # fn try_main() -> Result<(), ParseIbanError> {
+/// use iban::Iban;
+///
+/// let address = "KZ86125KZT5004100100".parse::<Iban>()?;
+/// # Ok(())
+/// # }
+/// #
+/// # fn main() {
+/// #     try_main().unwrap();
+/// # }
 /// ```
 ///
 /// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Iban(String);
 
-/// The result after using [`parse()`] or [`from_str()`]. It indicates that the string does not
-/// follow the IBAN specification.
+/// The result after using [`parse()`] or [`from_str()`] on an invalid IBAN. It indicates that the
+/// string does not follow the IBAN specification.
 ///
 /// # Examples
 ///
@@ -65,9 +87,7 @@ pub struct Iban(String);
 /// use iban::ParseIbanError;
 ///
 /// // Too short
-/// let address_result = "AA32".parse::<Iban>();
-///
-/// assert!(match address_result {
+/// assert!(match "AA32".parse::<Iban>() {
 ///     Err(ParseIbanError{..}) => true,
 ///     _ => false
 /// });
@@ -81,17 +101,45 @@ pub struct ParseIbanError {
     _private: (),
 }
 
+static PARSE_IBAN_ERROR_DESCRIPTION: &'static str = "account number does not follow the IBAN \
+format";
+
+impl fmt::Display for ParseIbanError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        PARSE_IBAN_ERROR_DESCRIPTION.fmt(f)
+    }
+}
+
+impl Error for ParseIbanError {
+    fn description(&self) -> &str {
+        PARSE_IBAN_ERROR_DESCRIPTION
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
+}
+
 impl Iban {
     /// Returns the country code of an IBAN. The country code consists of the first two letters of
     /// an address.
     ///
     /// # Examples
     /// ```rust
-    /// assert_eq!("AD1200012030200359100100".parse::<iban::Iban>()
-    ///     .expect("Could not parse IBAN.")
+    /// # use iban::ParseIbanError;
+    /// # fn try_main() -> Result<(), ParseIbanError> {
+    /// use iban::Iban;
+    ///
+    /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_country_code(),
     ///     "AD"
     /// );
+    /// # Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
     pub fn get_country_code(&self) -> &str {
         let (country_code, _) = self.split_at(2);
@@ -103,16 +151,27 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// assert_eq!("AD1200012030200359100100".parse::<iban::Iban>()
-    ///     .expect("Could not parse IBAN.")
+    /// # use iban::ParseIbanError;
+    /// # fn try_main() -> Result<(), ParseIbanError> {
+    /// use iban::Iban;
+    ///
+    /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_check_digits(),
-    ///     "12"
+    ///     12
     /// );
+    /// # Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
-    pub fn get_check_digits(&self) -> &str {
+    pub fn get_check_digits(&self) -> u8 {
         let (_, after_country_code) = self.split_at(2);
         let (check_digits, _) = after_country_code.split_at(2);
-        check_digits
+        check_digits.parse()
+            .expect("Could not parse check digits. Please create an issue at \
+                https://github.com/ThomasdenH/iban_validate.")
     }
 
     /// Returns the BBAN part of an IBAN. It consists of all characters after the country code and
@@ -121,11 +180,20 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// assert_eq!("AD1200012030200359100100".parse::<iban::Iban>()
-    ///     .expect("Could not parse IBAN.")
+    /// # use iban::ParseIbanError;
+    /// # fn try_main() -> Result<(), ParseIbanError> {
+    /// use iban::Iban;
+    ///
+    /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_bban(),
     ///     "00012030200359100100"
     /// );
+    /// # Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
     ///
     /// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
@@ -151,20 +219,29 @@ impl Iban {
     /// # Examples
     ///
     /// ```rust
+    /// # use iban::ParseIbanError;
+    /// #
+    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use iban::Iban;
     /// use iban::BbanResult;
     ///
     /// // A valid BBAN
-    /// let iban1: Iban = "DE44500105175407324931".parse().unwrap();
+    /// let iban1 = "DE44500105175407324931".parse::<Iban>()?;
     /// assert_eq!(iban1.validate_bban(), BbanResult::Valid);
     ///
     /// // An invalid BBAN
-    /// let iban2: Iban = "BA6312900794010284AC".parse().unwrap();
+    /// let iban2: Iban = "BA6312900794010284AC".parse()?;
     /// assert_eq!(iban2.validate_bban(), BbanResult::Invalid);
     ///
     /// // An unknown country
-    /// let iban3: Iban = "ZZ07273912631298461".parse().unwrap();
+    /// let iban3: Iban = "ZZ07273912631298461".parse()?;
     /// assert_eq!(iban3.validate_bban(), BbanResult::CountryUnknown);
+    /// # Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
     pub fn validate_bban(&self) -> BbanResult {
         let country_match = RE_COUNTRY_CODE
@@ -233,15 +310,22 @@ impl str::FromStr for Iban {
     ///
     /// # Examples
     /// ```rust
+    /// # use iban::ParseIbanError;
+    /// #
+    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use std::str::FromStr;
     ///
     /// // Explicit usage
-    /// let address1 = iban::Iban::from_str("DE44500105175407324931")
-    ///     .expect("Could not parse IBAN!");
+    /// let address1 = iban::Iban::from_str("DE44500105175407324931")?;
     ///
     /// // Implicit usage
-    /// let address2 = "DE44500105175407324931".parse::<iban::Iban>()
-    ///     .expect("Could not parse IBAN!");
+    /// let address2 = "DE44500105175407324931".parse::<iban::Iban>()?;
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
     ///
     /// # Errors
@@ -273,15 +357,22 @@ impl str::FromStr for Iban {
 }
 
 impl fmt::Display for Iban {
-    /// Display an IBAN.
+    /// Displays an IBAN.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// let account: iban::Iban = "DE44500105175407324931".parse()
-    ///     .expect("Could not parse IBAN!");
-    ///
+    /// # use iban::ParseIbanError;
+    /// #
+    /// # fn try_main() -> Result<(), ParseIbanError> {
+    /// let account: iban::Iban = "DE44500105175407324931".parse()?;
     /// assert_eq!(format!("{}", account), "DE44500105175407324931");
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
@@ -291,7 +382,6 @@ impl fmt::Display for Iban {
 impl ops::Deref for Iban {
     type Target = str;
 
-    /// Deref an Iban to use all methods of &str as well.
     fn deref(&self) -> &str {
         self.0.as_str()
     }
