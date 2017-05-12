@@ -39,12 +39,6 @@ extern crate lazy_static;
 #[cfg(test)]
 extern crate spectral;
 
-#[cfg(test)]
-mod tests;
-mod iban_countries;
-
-pub use iban_countries::BbanResult;
-
 use std::str;
 use std::fmt;
 use std::ops;
@@ -53,6 +47,12 @@ use std::error::Error;
 
 use iban_countries::RE_COUNTRY_CODE;
 use iban_countries::RE_ADDRESS_REMAINDER;
+
+pub use iban_countries::BbanResult;
+
+#[cfg(test)]
+mod tests;
+mod countries;
 
 /// Represents an IBAN. To obtain it, make use of the [`parse()`] function, which will make sure the
 /// string follows the ISO 13616 standard.
