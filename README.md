@@ -6,29 +6,37 @@
 This is a small crate that is able to validate an IBAN account number.
 
 ## Usage
-To use this crate, just add it as an dependency:
+The crate can be found on [crates.io](https://crates.io/crates/iban_validate). To use this crate, just add it as an
+dependency:
     
     [dependencies]
-    iban_validate = "0.3.1"
+    iban_validate = "0.4.0"
 
 ## Functionality
-The crate has two functions that perform different tasks. See the [documentation](https://docs.rs/iban_validate/) for a
-complete explanation including some examples.
+This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the 
+function [`parse()`]. If you want to check whether the address has a valid BBAN (Basic Bank Account Number), you can 
+use [`validate_bban()`]. It also contains some helper methods to make handling an IBAN easier.
 
-### [validate_iban()](https://docs.rs/iban_validate/0.3.1/iban/fn.validate_iban.html)
-This function validates the IBAN specification. This means that an address will be regarded as valid unless:
-- An address consists of 4 or less characters
-- An address consists of 35 or more characters
-- The address contains characters other than A-Z or 0-9
-- The address does not start with two letters, followed by two numbers
-- The checksum of the address is invalid
+### Example
+The following example does a full validation of the IBAN and BBAN format.
 
-### [validate_iban_country()](https://docs.rs/iban_validate/0.3.1/iban/fn.validate_iban_country.html)
-This function validates the BBAN country specific part of an IBAN address. It distinguishes between three different 
-results:
-- The country code was recognized and the country format is valid
-- The country code was recognized and the country format is invalid
-- The country code was not recognized
+```rust
+use iban::Iban;
+use iban::BbanResult;
+
+let account = "DE44500105175407324931".parse::<Iban>()?;
+
+assert_eq!(account.validate_bban(), BbanResult::Valid);
+assert_eq!(account.get_country_code(), "DE");
+assert_eq!(account.get_check_digits(), 44);
+assert_eq!(account.get_bban(), "500105175407324931");
+```
+
+[`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
+[`validate_bban()`]: https://docs.rs/iban_validate/0.4.0/iban/struct.Iban.html#method.validate_bban
+
+## Documentation
+The full documentation is available at [docs.rs](https://docs.rs/iban_validate/).
 
 ## License
 

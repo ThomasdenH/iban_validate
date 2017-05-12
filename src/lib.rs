@@ -31,7 +31,7 @@
 //! [`validate_bban()`]: struct.Iban.html#method.validate_bban
 
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/iban_validate/0.3.1")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/0.4.0")]
 
 extern crate regex;
 #[macro_use]
@@ -45,10 +45,10 @@ use std::ops;
 use regex::Regex;
 use std::error::Error;
 
-use iban_countries::RE_COUNTRY_CODE;
-use iban_countries::RE_ADDRESS_REMAINDER;
+use countries::RE_COUNTRY_CODE;
+use countries::RE_ADDRESS_REMAINDER;
 
-pub use iban_countries::BbanResult;
+pub use countries::BbanResult;
 
 #[cfg(test)]
 mod tests;
