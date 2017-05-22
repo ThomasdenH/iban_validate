@@ -1,7 +1,7 @@
 //! This module contains tests for the BBAN format
-extern crate spectral;
 
-use spectral::prelude::*;
+use expectest::prelude::*;
+
 use Iban;
 use BbanResult;
 
@@ -85,11 +85,8 @@ fn test_valid_countries() {
                                 "XK051212012345678906"];
 
     for &i in valid_iban_countries.into_iter() {
-        let iban_number = i.parse::<Iban>().expect("Number is an invalid Iban.");
-        asserting("Valid country format")
-            .that(&iban_number.validate_bban())
-            .named(&i)
-            .is_equal_to(&BbanResult::Valid);
+        let iban_number = i.parse::<Iban>().expect("Could not parse IBAN");
+        expect!(iban_number.validate_bban()).to(be_equal_to(BbanResult::Valid));
     }
 }
 
@@ -109,11 +106,8 @@ fn test_invalid_country_format() {
                                "BY56NBRB36009000002Z00AB00"];
 
     for &i in valid_iban_counties.into_iter() {
-        let iban_number = i.parse::<Iban>().expect("Number is an invalid Iban.");
-        asserting("Invalid country formats")
-            .that(&iban_number.validate_bban())
-            .named(&i)
-            .is_equal_to(&BbanResult::Invalid);
+        let iban_number = i.parse::<Iban>().expect("Could not parse IBAN");
+        expect!(iban_number.validate_bban()).to(be_equal_to(BbanResult::Invalid));
     }
 }
 
@@ -123,10 +117,7 @@ fn test_unknown_country() {
     let iban_unknown_string = "ZZ07273912631298461";
     let iban_unknown = iban_unknown_string
         .parse::<Iban>()
-        .expect("Number is an invalid Iban.");
+        .expect("Could not parse IBAN");
 
-    asserting("Unknown country")
-        .that(&iban_unknown.validate_bban())
-        .named(&iban_unknown_string)
-        .is_equal_to(&BbanResult::CountryUnknown);
+    expect!(iban_unknown.validate_bban()).to(be_equal_to(BbanResult::CountryUnknown));
 }

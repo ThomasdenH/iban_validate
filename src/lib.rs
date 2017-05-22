@@ -37,7 +37,8 @@ extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 #[cfg(test)]
-extern crate spectral;
+#[macro_use(expect)]
+extern crate expectest;
 
 use std::str;
 use std::fmt;
@@ -349,9 +350,6 @@ impl str::FromStr for Iban {
         if Iban::validate_characters(&address) && Iban::compute_checksum(&address) == 1 {
             Ok(Iban(address.to_string()))
         } else {
-            if Iban::validate_characters(&address) {
-                println!("{}: {}", address, Iban::compute_checksum(&address));
-            }
             Err(ParseIbanError { _private: () })
         }
     }
