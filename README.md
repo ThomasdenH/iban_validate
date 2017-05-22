@@ -38,6 +38,9 @@ assert_eq!(account.get_bban(), "500105175407324931");
 ## Documentation
 The full documentation is available at [docs.rs](https://docs.rs/iban_validate/).
 
+## Contributing
+If you experience issues with this crate or want to help, please look [here](contributing.md).
+
 ## License
 
 Licensed under either of
