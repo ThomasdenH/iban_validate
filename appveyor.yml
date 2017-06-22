@@ -35,11 +35,5 @@ install:
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
   - rustc -vV
   - cargo -vV
-  - cargo install rustfmt
 
 build: false
-
-test_script:
-  - cargo fmt -- --write-mode=diff
-  - cargo build --verbose
-  - cargo test --verbose
