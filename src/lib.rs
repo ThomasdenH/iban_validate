@@ -103,7 +103,7 @@ pub struct ParseIbanError {
 }
 
 static PARSE_IBAN_ERROR_DESCRIPTION: &'static str = "account number does not follow the IBAN \
-format";
+                                                     format";
 
 impl fmt::Display for ParseIbanError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -170,10 +170,10 @@ impl Iban {
     pub fn get_check_digits(&self) -> u8 {
         let (_, after_country_code) = self.split_at(2);
         let (check_digits, _) = after_country_code.split_at(2);
-        check_digits
-            .parse()
-            .expect("Could not parse check digits. Please create an issue at \
-                https://github.com/ThomasdenH/iban_validate.")
+        check_digits.parse().expect(
+            "Could not parse check digits. Please create an issue at \
+             https://github.com/ThomasdenH/iban_validate.",
+        )
     }
 
     /// Returns the BBAN part of an IBAN. It consists of all characters after the country code and
