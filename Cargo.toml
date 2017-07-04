@@ -17,7 +17,7 @@ categories = ["parsing"]
 
 [badges]
 travis-ci = { repository = "ThomasdenH/iban_validate" }
-appveyor = { repository = "ThomasdenH/iban_validate" }
+appveyor = { repository = "ThomasdenH/iban-validate" }
 
 [lib]
 name = "iban"
