@@ -1,7 +1,7 @@
 [package]
 name = "iban_validate"
 # Note: When updating, also update in lib.rs and README.md
-version = "0.4.0"
+version = "1.0.0"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 include = [
     "**/*.rs",
