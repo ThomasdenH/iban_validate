@@ -10,7 +10,7 @@ The crate can be found on [crates.io](https://crates.io/crates/iban_validate). T
 dependency:
     
     [dependencies]
-    iban_validate = "1.0.0"
+    iban_validate = "1.0.1"
 
 ## Functionality
 This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the 
@@ -33,7 +33,7 @@ assert_eq!(account.get_bban(), "500105175407324931");
 ```
 
 [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
-[`validate_bban()`]: https://docs.rs/iban_validate/1.0.0/iban/struct.Iban.html#method.validate_bban
+[`validate_bban()`]: https://docs.rs/iban_validate/1.0.1/iban/struct.Iban.html#method.validate_bban
 
 ## Documentation
 The full documentation is available at [docs.rs](https://docs.rs/iban_validate/).
