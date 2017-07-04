@@ -1,4 +1,4 @@
 target
 **/*.bk
-.idea
+.idea/
 Cargo.lock
