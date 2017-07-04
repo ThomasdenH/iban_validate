@@ -18,6 +18,8 @@
 //! assert_eq!(account.get_country_code(), "DE");
 //! assert_eq!(account.get_check_digits(), 44);
 //! assert_eq!(account.get_bban(), "500105175407324931");
+//! assert_eq!(account.format_electronic(), "DE44500105175407324931");
+//! assert_eq!(account.format_print(), "DE44 5001 0517 5407 3249 31");
 //! #
 //! # Ok(())
 //! # }
@@ -267,6 +269,70 @@ impl Iban {
         }
     }
 
+    /// Returns the electronic format of an IBAN. This a simple string representation without any
+    /// whitespace. To get the pretty print format, see [`format_print()`] or make use of the
+    /// implementation of the [`Display`] trait.
+    ///
+    /// [`format_print()`]: ./struct.Iban.html#method.format_print
+    /// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use iban::Iban;
+    /// #
+    /// # fn try_main() -> Result<(), iban::ParseIbanError> {
+    /// let iban = "DO28 BAGR 0000 0001 2124 5361 1324".parse::<Iban>()?;
+    /// assert_eq!(iban.format_electronic(), "DO28BAGR00000001212453611324");
+    /// #   Ok(())
+    /// # }
+    /// # fn main() {
+    ///     try_main().unwrap();
+    /// }
+    /// ```
+    ///
+    pub fn format_electronic(&self) -> String {
+        return self.0.clone();
+    }
+
+    /// Returns the pretty print format of an IBAN. This is a string representation where every
+    /// four characters are seperated by a space. The [`Display`] trait also produces strings
+    /// formatted in this way. To get an electronic representation without spaces, use
+    /// [`format_electronic()`].
+    ///
+    /// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+    /// [`format_electronic()`]: ./struct.Iban.html#method.format_electronic
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use iban::Iban;
+    /// #
+    /// # fn try_main() -> Result<(), iban::ParseIbanError> {
+    /// let iban = "DO28BAGR00000001212453611324".parse::<Iban>()?;
+    /// assert_eq!(iban.format_print(), "DO28 BAGR 0000 0001 2124 5361 1324");
+    /// #   Ok(())
+    /// # }
+    /// # fn main() {
+    ///     try_main().unwrap();
+    /// }
+    /// ```
+    ///
+    pub fn format_print(&self) -> String {
+        let mut spaced_string = String::new();
+        let mut char_iter = self.0.chars();
+        for i in 0..(self.0.len() + (self.0.len() - 1) / 4) {
+            spaced_string.push(if i % 5 == 4 {
+                ' '
+            } else {
+                // Since we iterate over the correct length, this should always give Ok()
+                char_iter.next().expect(
+                    "Unexpected None found while formatting. Please file an issue at \
+                     https://github.com/ThomasdenH/iban_validate.",
+                )
+            });
+        }
+        return spaced_string;
+    }
+
     /// Checks whether all characters in this address are valid. Returns a true if all characters
     /// are valid, false otherwise.
     fn validate_characters(address: &str) -> bool {
@@ -319,9 +385,10 @@ impl str::FromStr for Iban {
     ///
     /// // Explicit usage
     /// let address1 = iban::Iban::from_str("DE44500105175407324931")?;
+    /// let address2 = iban::Iban::from_str("DE44 5001 0517 5407 3249 31")?;
     ///
     /// // Implicit usage
-    /// let address2 = "DE44500105175407324931".parse::<iban::Iban>()?;
+    /// let address3 = "DE44500105175407324931".parse::<iban::Iban>()?;
     /// #     Ok(())
     /// # }
     /// #
@@ -347,8 +414,14 @@ impl str::FromStr for Iban {
     /// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
     ///
     fn from_str(address: &str) -> Result<Self, Self::Err> {
-        if Iban::validate_characters(&address) && Iban::compute_checksum(&address) == 1 {
-            Ok(Iban(address.to_string()))
+        // Remove the spaces
+        let address_no_spaces = address.replace(" ", "");
+
+        // Validate the Iban
+        if Iban::validate_characters(&address_no_spaces) &&
+            Iban::compute_checksum(&address_no_spaces) == 1
+        {
+            Ok(Iban(address_no_spaces))
         } else {
             Err(ParseIbanError { _private: () })
         }
@@ -356,7 +429,7 @@ impl str::FromStr for Iban {
 }
 
 impl fmt::Display for Iban {
-    /// Displays an IBAN.
+    /// Displays an IBAN in the pretty print format.
     ///
     /// # Examples
     ///
@@ -365,7 +438,7 @@ impl fmt::Display for Iban {
     /// #
     /// # fn try_main() -> Result<(), ParseIbanError> {
     /// let account: iban::Iban = "DE44500105175407324931".parse()?;
-    /// assert_eq!(format!("{}", account), "DE44500105175407324931");
+    /// assert_eq!(format!("{}", account), "DE44 5001 0517 5407 3249 31");
     /// #     Ok(())
     /// # }
     /// #
@@ -374,7 +447,7 @@ impl fmt::Display for Iban {
     /// # }
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
+        self.format_print().fmt(f)
     }
 }
 
