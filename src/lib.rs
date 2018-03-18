@@ -291,7 +291,7 @@ impl Iban {
     /// ```
     ///
     pub fn format_electronic(&self) -> String {
-        return self.0.clone();
+        self.0.clone()
     }
 
     /// Returns the pretty print format of an IBAN. This is a string representation where every
@@ -330,7 +330,7 @@ impl Iban {
                 )
             });
         }
-        return spaced_string;
+        spaced_string
     }
 
     /// Checks whether all characters in this address are valid. Returns a true if all characters
