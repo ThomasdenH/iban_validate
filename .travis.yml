@@ -1,42 +1,48 @@
-sudo: false
+sudo: required
 language: rust
-# necessary for `travis-cargo coveralls --no-sudo`
+
+# Cache cargo symbols for faster build
+cache: cargo
+
+# Dependencies of kcov, used by coverage
 addons:
   apt:
     packages:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
-      - binutils-dev # optional: only required for the --verify flag of coveralls
+      - binutils-dev
+      - cmake # also required for cargo-update
+    sources:
+      - kalakris-cmake
 
+# run builds for all the trains (and more)
 rust:
-  - stable
-  - beta
   - nightly
+  - beta
+  # check it compiles on the latest stable compiler
+  - stable
+  # and the first stable one (this should be bumped as the minimum
+  # Rust version required changes)
+  - 1.12.0
 
 matrix:
   allow_failures:
     - rust: nightly
 
 before_script:
-  - export PATH="$PATH:$HOME/.cargo/bin"
-  - |
-      pip install 'travis-cargo<0.2' --user &&
-      export PATH=$HOME/.local/bin:$PATH
+  - export PATH=$HOME/.cargo/bin:$PATH
+  - cargo install cargo-update || echo "cargo-update already installed"
+  - cargo install cargo-travis || echo "cargo-travis already installed"
+  - cargo install-update -a # update outdated cached binaries
 
+# the main build
 script:
   - |
-      travis-cargo build &&
-      travis-cargo test &&
-      travis-cargo --only stable doc
+      cargo build &&
+      cargo test &&
+      cargo doc
 
 after_success:
-  # measure code coverage and upload to coveralls.io (the verify
-  # argument mitigates kcov crashes due to malformed debuginfo, at the
-  # cost of some speed <https://github.com/huonw/travis-cargo/issues/12>)
-  - travis-cargo coveralls --no-sudo --verify
-
-env:
-  global:
-    # override the default `--features unstable` used for the nightly branch (optional)
-    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+# measure code coverage and upload to coveralls.io
+  - cargo coveralls
