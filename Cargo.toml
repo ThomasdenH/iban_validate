@@ -3,29 +3,28 @@ name = "iban_validate"
 # Note: When updating, also update in lib.rs and README.md
 version = "1.0.1"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
-include = [
-    "**/*.rs",
-    "Cargo.toml"
-]
 description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
-documentation = "https://docs.rs/iban_validate/"
 license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 
 [badges]
-travis-ci = { repository = "ThomasdenH/iban_validate" }
 appveyor = { repository = "ThomasdenH/iban-validate" }
+travis-ci = { repository = "ThomasdenH/iban_validate" }
+coveralls = { repository = "ThomasdenH/iban_validate" }
+is-it-maintained-issue-resolution = { repository = "ThomasdenH/iban_validate" }
+is-it-maintained-open-issues = { repository = "ThomasdenH/iban_validate" }
+maintenance = { status = "passively-maintained" }
 
 [lib]
 name = "iban"
 path = "src/lib.rs"
 
 [dependencies]
-regex = "0.2.2"
-lazy_static = "0.2.8"
+regex = "0.2.10"
+lazy_static = "1.0.0"
 
 [dev-dependencies]
-expectest = "0.7.0"
+expectest = "0.9.2"
