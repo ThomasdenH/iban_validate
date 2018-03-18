@@ -33,7 +33,7 @@
 //! [`validate_bban()`]: struct.Iban.html#method.validate_bban
 
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/iban_validate/1.0.1")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/1.0.2")]
 
 extern crate regex;
 #[macro_use]
