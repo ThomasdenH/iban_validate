@@ -14,7 +14,7 @@ The crate can be found on [crates.io](https://crates.io/crates/iban_validate). T
 dependency:
     
     [dependencies]
-    iban_validate = "1.0.2"
+    iban_validate = "1.0.3"
 
 ## Functionality
 This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the 
