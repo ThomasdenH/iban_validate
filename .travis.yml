@@ -29,6 +29,8 @@ matrix:
 # the main build
 script:
   - |
+      rustc -vV &&
+      cargo -vV &&
       cargo build &&
       cargo test &&
       cargo doc
