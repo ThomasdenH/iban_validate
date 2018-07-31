@@ -45,6 +45,9 @@ The full documentation is available at [docs.rs](https://docs.rs/iban_validate/)
 ## Contributing
 If you experience issues with this crate or want to help, please look [here](contributing.md).
 
+## Stability
+This crate has the goal of being usable on the latest stable version of Rust. Its minimum version is documented and tested against, although no extra effort is taken to support earlier versions. The minimum version of Rust can be increased, although this corresponds to a new major release. The crate does not use unsafe itself, although dependencies might. Breaking changes are not avoided in new major versions, although these will always be well-documented and the process of upgrading made clear.
+
 ## License
 
 Licensed under either of
