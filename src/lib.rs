@@ -32,6 +32,7 @@
 //! [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
 //! [`validate_bban()`]: struct.Iban.html#method.validate_bban
 
+#![forbid(unsafe_code)]
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/iban_validate/1.0.3")]
 
