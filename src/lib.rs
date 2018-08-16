@@ -45,6 +45,8 @@ extern crate lazy_static;
 #[cfg(test)]
 #[macro_use(expect)]
 extern crate expectest;
+#[cfg(test)]
+#[macro_use] extern crate proptest;
 
 use std::str;
 use std::fmt;
