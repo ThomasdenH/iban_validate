@@ -36,7 +36,7 @@
 // deny instead of forbid
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/iban_validate/1.0.3")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/2.0.0")]
 #![forbid(unsafe_code)]
 
 use lazy_static::lazy_static;
