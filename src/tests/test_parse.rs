@@ -1,8 +1,8 @@
 //! This module tests the parsing of various IBAN numbers
 
+use crate::Iban;
+use expectest::expect;
 use expectest::prelude::*;
-
-use Iban;
 
 #[test]
 /// This test checks whether IBANs of invalid lengths are detected to be invalid.
@@ -51,7 +51,6 @@ fn test_checksum() {
 #[test]
 /// This test checks whether valid IBANs are marked valid.
 fn test_valid_iban() {
-
     let valid_ibans = [
         "DE44500105175407324931",
         "GR1601101250000000012300695",
