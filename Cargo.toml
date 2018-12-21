@@ -1,7 +1,7 @@
 [package]
 name = "iban_validate"
 # Note: When updating, also update in lib.rs and README.md
-version = "1.0.3"
+version = "2.0.0"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
@@ -9,6 +9,7 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
+edition = "2018"
 
 [badges]
 appveyor = { repository = "ThomasdenH/iban-validate" }
@@ -23,8 +24,9 @@ name = "iban"
 path = "src/lib.rs"
 
 [dependencies]
-regex = "1.0.0"
-lazy_static = "1.0.0"
+regex = "1.1.0"
+lazy_static = "1.2.0"
 
 [dev-dependencies]
-expectest = "0.10.0"
+expectest = "0.11.0"
+proptest = "0.8.7"

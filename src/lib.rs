@@ -32,30 +32,28 @@
 //! [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
 //! [`validate_bban()`]: struct.Iban.html#method.validate_bban
 
+// Crate doesn't use unsafe itself, but the lazy_static macro uses #![allow(unsafe_code)], so use
+// deny instead of forbid
+#![deny(unsafe_code)]
 #![deny(missing_docs)]
-#![doc(html_root_url = "https://docs.rs/iban_validate/1.0.3")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/2.0.0")]
+#![forbid(unsafe_code)]
 
-extern crate regex;
-#[macro_use]
-extern crate lazy_static;
-#[cfg(test)]
-#[macro_use(expect)]
-extern crate expectest;
-
-use std::str;
-use std::fmt;
-use std::ops;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::error::Error;
+use std::fmt;
+use std::ops;
+use std::str;
 
-use countries::RE_COUNTRY_CODE;
-use countries::RE_ADDRESS_REMAINDER;
+use crate::countries::RE_ADDRESS_REMAINDER;
+use crate::countries::RE_COUNTRY_CODE;
 
-pub use countries::BbanResult;
+pub use crate::countries::BbanResult;
 
+mod countries;
 #[cfg(test)]
 mod tests;
-mod countries;
 
 /// Represents an IBAN. To obtain it, make use of the [`parse()`] function, which will make sure the
 /// string follows the ISO 13616 standard.
@@ -108,7 +106,7 @@ static PARSE_IBAN_ERROR_DESCRIPTION: &'static str = "account number does not fol
                                                      format";
 
 impl fmt::Display for ParseIbanError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         PARSE_IBAN_ERROR_DESCRIPTION.fmt(f)
     }
 }
@@ -118,7 +116,7 @@ impl Error for ParseIbanError {
         PARSE_IBAN_ERROR_DESCRIPTION
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         None
     }
 }
@@ -337,9 +335,10 @@ impl Iban {
     /// are valid, false otherwise.
     fn validate_characters(address: &str) -> bool {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"^[A-Z]{2}\d{2}[A-Z\d]{1,30}$")
-                .expect("Could not compile regular expression. Please file an issue at \
-                    https://github.com/ThomasdenH/iban_validate.");
+            static ref RE: Regex = Regex::new(r"^[A-Z]{2}\d{2}[A-Z\d]{1,30}$").expect(
+                "Could not compile regular expression. Please file an issue at \
+                 https://github.com/ThomasdenH/iban_validate."
+            );
         }
         RE.is_match(address)
     }
@@ -350,7 +349,8 @@ impl Iban {
     /// # Panics
     /// If the address contains any characters other than 0-9 or A-Z, this function will panic.
     fn compute_checksum(address: &str) -> u8 {
-        address.chars()
+        address
+            .chars()
             // Move the first four characters to the back
             .cycle()
             .skip(4)
@@ -358,10 +358,11 @@ impl Iban {
             // Calculate the checksum
             .fold(0, |acc, c| {
                 // Convert '0'-'Z' to 0-35
-                let digit = c.to_digit(36)
-                    .expect("An address was supplied to compute_checksum with an invalid \
-                    character. Please file an issue at \
-                    https://github.com/ThomasdenH/iban_validate.");
+                let digit = c.to_digit(36).expect(
+                    "An address was supplied to compute_checksum with an invalid \
+                     character. Please file an issue at \
+                     https://github.com/ThomasdenH/iban_validate.",
+                );
                 // If the number consists of two digits, multiply by 100
                 let multiplier = if digit > 9 { 100 } else { 10 };
                 // Calculate modulo
@@ -418,8 +419,8 @@ impl str::FromStr for Iban {
         let address_no_spaces = address.replace(" ", "");
 
         // Validate the Iban
-        if Iban::validate_characters(&address_no_spaces) &&
-            Iban::compute_checksum(&address_no_spaces) == 1
+        if Iban::validate_characters(&address_no_spaces)
+            && Iban::compute_checksum(&address_no_spaces) == 1
         {
             Ok(Iban(address_no_spaces))
         } else {
@@ -446,7 +447,7 @@ impl fmt::Display for Iban {
     /// #     try_main().unwrap();
     /// # }
     /// ```
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.format_print().fmt(f)
     }
 }

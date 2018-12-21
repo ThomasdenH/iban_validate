@@ -1,8 +1,8 @@
 //! This module tests the split utility functions provided by the [`Iban`] type.
 
+use crate::Iban;
+use expectest::expect;
 use expectest::prelude::*;
-
-use Iban;
 
 #[test]
 /// This test checks whether the different splits of an address are correct.

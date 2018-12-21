@@ -5,7 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ThomasdenH/iban_validate/badge.svg?branch=master)](https://coveralls.io/github/ThomasdenH/iban_validate?branch=master)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Percentage of issues still open")
-[![Rust](https://img.shields.io/badge/rust-1.20%2B-blue.svg?maxAge=3600)](https://github.com/ThomasdenH/iban_validate)
+[![Rust](https://img.shields.io/badge/rust-1.31%2B-blue.svg?maxAge=3600)](https://github.com/ThomasdenH/iban_validate)
 
 This is a small crate that is able to validate an IBAN account number.
 
@@ -14,7 +14,7 @@ The crate can be found on [crates.io](https://crates.io/crates/iban_validate). T
 dependency:
     
     [dependencies]
-    iban_validate = "1.0.3"
+    iban_validate = "2.0.0"
 
 ## Functionality
 This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the 
@@ -44,6 +44,9 @@ The full documentation is available at [docs.rs](https://docs.rs/iban_validate/)
 
 ## Contributing
 If you experience issues with this crate or want to help, please look [here](contributing.md).
+
+## Stability
+This crate has the goal of being usable on the latest stable version of Rust. Its minimum version is documented and tested against, although no extra effort is taken to support earlier versions. The minimum version of Rust can be increased, although this corresponds to a new major release. The crate does not use unsafe itself, although dependencies might. Breaking changes are not avoided in new major versions, although these will always be well-documented and the process of upgrading made clear.
 
 ## License
 

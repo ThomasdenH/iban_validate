@@ -1,9 +1,9 @@
 //! This module contains tests for the BBAN format
 
+use crate::BbanResult;
+use crate::Iban;
+use expectest::expect;
 use expectest::prelude::*;
-
-use Iban;
-use BbanResult;
 
 #[test]
 /// This test checks whether ibans with a valid country format are recognized as such.

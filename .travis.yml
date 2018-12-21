@@ -20,7 +20,7 @@ rust:
   # check it compiles on the latest stable compiler
   - stable
   # Test for the minimum required version
-  - 1.20.0
+  - 1.31.0
 
 matrix:
   allow_failures:
