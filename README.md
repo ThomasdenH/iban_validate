@@ -7,7 +7,7 @@
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Percentage of issues still open")
 [![Rust](https://img.shields.io/badge/rust-1.31%2B-blue.svg?maxAge=3600)](https://github.com/ThomasdenH/iban_validate)
 
-This is a small crate that is able to validate an IBAN account number.
+This is a small crate that is able to validate an IBAN account number. It has many tests and uses [proptest](https://crates.io/crates/proptest) for fuzzing.
 
 ## Usage
 The crate can be found on [crates.io](https://crates.io/crates/iban_validate). To use this crate, just add it as an
