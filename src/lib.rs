@@ -7,8 +7,6 @@
 //! The following example does a full validation of the IBAN and BBAN format.
 //!
 //! ```rust
-//! # use iban::ParseIbanError;
-//! # fn try_main() -> Result<(), ParseIbanError> {
 //! use iban::Iban;
 //! use iban::BbanResult;
 //!
@@ -20,13 +18,7 @@
 //! assert_eq!(account.get_bban(), "500105175407324931");
 //! assert_eq!(account.format_electronic(), "DE44500105175407324931");
 //! assert_eq!(account.format_print(), "DE44 5001 0517 5407 3249 31");
-//! #
-//! # Ok(())
-//! # }
-//! # fn main() {
-//! #     try_main().unwrap();
-//! # }
-//! #
+//! # Ok::<(), iban::ParseIbanError>(())
 //! ```
 //!
 //! [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
@@ -60,18 +52,8 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
-/// # use iban::ParseIbanError;
-/// #
-/// # fn try_main() -> Result<(), ParseIbanError> {
-/// use iban::Iban;
-///
-/// let address = "KZ86125KZT5004100100".parse::<Iban>()?;
-/// # Ok(())
-/// # }
-/// #
-/// # fn main() {
-/// #     try_main().unwrap();
-/// # }
+/// let address = "KZ86125KZT5004100100".parse::<iban::Iban>()?;
+/// # Ok::<(), iban::ParseIbanError>(())
 /// ```
 ///
 /// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
@@ -127,20 +109,13 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use iban::Iban;
     ///
     /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_country_code(),
     ///     "AD"
     /// );
-    /// # Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     pub fn get_country_code(&self) -> &str {
         let (country_code, _) = self.split_at(2);
@@ -152,20 +127,13 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use iban::Iban;
     ///
     /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_check_digits(),
     ///     12
     /// );
-    /// # Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     pub fn get_check_digits(&self) -> u8 {
         let (_, after_country_code) = self.split_at(2);
@@ -182,20 +150,13 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use iban::Iban;
     ///
     /// assert_eq!("AD1200012030200359100100".parse::<Iban>()?
     ///     .get_bban(),
     ///     "00012030200359100100"
     /// );
-    /// # Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     ///
     /// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
@@ -221,9 +182,6 @@ impl Iban {
     /// # Examples
     ///
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// #
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use iban::Iban;
     /// use iban::BbanResult;
     ///
@@ -238,12 +196,7 @@ impl Iban {
     /// // An unknown country
     /// let iban3: Iban = "ZZ07273912631298461".parse()?;
     /// assert_eq!(iban3.validate_bban(), BbanResult::CountryUnknown);
-    /// # Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     pub fn validate_bban(&self) -> BbanResult {
         let country_match = RE_COUNTRY_CODE
@@ -276,16 +229,9 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::Iban;
-    /// #
-    /// # fn try_main() -> Result<(), iban::ParseIbanError> {
-    /// let iban = "DO28 BAGR 0000 0001 2124 5361 1324".parse::<Iban>()?;
+    /// let iban = "DO28 BAGR 0000 0001 2124 5361 1324".parse::<iban::Iban>()?;
     /// assert_eq!(iban.format_electronic(), "DO28BAGR00000001212453611324");
-    /// #   Ok(())
-    /// # }
-    /// # fn main() {
-    ///     try_main().unwrap();
-    /// }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     ///
     pub fn format_electronic(&self) -> String {
@@ -302,16 +248,9 @@ impl Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::Iban;
-    /// #
-    /// # fn try_main() -> Result<(), iban::ParseIbanError> {
-    /// let iban = "DO28BAGR00000001212453611324".parse::<Iban>()?;
+    /// let iban = "DO28BAGR00000001212453611324".parse::<iban::Iban>()?;
     /// assert_eq!(iban.format_print(), "DO28 BAGR 0000 0001 2124 5361 1324");
-    /// #   Ok(())
-    /// # }
-    /// # fn main() {
-    ///     try_main().unwrap();
-    /// }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     ///
     pub fn format_print(&self) -> String {
@@ -379,9 +318,6 @@ impl str::FromStr for Iban {
     ///
     /// # Examples
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// #
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// use std::str::FromStr;
     ///
     /// // Explicit usage
@@ -390,12 +326,7 @@ impl str::FromStr for Iban {
     ///
     /// // Implicit usage
     /// let address3 = "DE44500105175407324931".parse::<iban::Iban>()?;
-    /// #     Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     ///
     /// # Errors
@@ -435,17 +366,9 @@ impl fmt::Display for Iban {
     /// # Examples
     ///
     /// ```rust
-    /// # use iban::ParseIbanError;
-    /// #
-    /// # fn try_main() -> Result<(), ParseIbanError> {
     /// let account: iban::Iban = "DE44500105175407324931".parse()?;
     /// assert_eq!(format!("{}", account), "DE44 5001 0517 5407 3249 31");
-    /// #     Ok(())
-    /// # }
-    /// #
-    /// # fn main() {
-    /// #     try_main().unwrap();
-    /// # }
+    /// # Ok::<(), iban::ParseIbanError>(())
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.format_print().fmt(f)

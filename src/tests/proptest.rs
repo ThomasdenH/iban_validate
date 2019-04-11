@@ -1,6 +1,5 @@
 use crate::Iban;
-use proptest::prelude::ProptestConfig;
-use proptest::{proptest, proptest_helper};
+use proptest::prelude::*;
 
 proptest! {
     #![proptest_config(ProptestConfig {

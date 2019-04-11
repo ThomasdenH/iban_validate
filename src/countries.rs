@@ -111,9 +111,6 @@ lazy_static! {
 /// # Examples
 ///
 /// ```rust
-/// # use iban::ParseIbanError;
-/// #
-/// # fn try_main() -> Result<(), ParseIbanError> {
 /// use iban::Iban;
 /// use iban::BbanResult;
 ///
@@ -128,12 +125,7 @@ lazy_static! {
 /// // An unknown country
 /// let iban3: Iban = "ZZ07273912631298461".parse()?;
 /// assert_eq!(iban3.validate_bban(), BbanResult::CountryUnknown);
-/// # Ok(())
-/// # }
-/// #
-/// # fn main() {
-/// #     try_main().unwrap();
-/// # }
+/// # Ok::<(), iban::ParseIbanError>(())
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum BbanResult {
