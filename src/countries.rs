@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 use regex;
 use regex::{RegexSet, RegexSetBuilder};
 
-static COUNTRY_FORMATS: [(&'static str, &'static str); 75] = [
+static COUNTRY_FORMATS: [(&'static str, &'static str); 76] = [
     ("AD", r"^\d{8}[A-Z\d]{12}$"),
     ("AE", r"^\d{19}$"),
     ("AL", r"^\d{8}[A-Z\d]{16}$"),
