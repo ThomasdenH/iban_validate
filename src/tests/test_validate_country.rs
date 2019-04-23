@@ -84,6 +84,7 @@ fn test_valid_countries() {
         "UA213223130000026007233566001",
         "VG96VPVG0000012345678901",
         "XK051212012345678906",
+        "VA59001123000012345678",
     ];
 
     for &i in valid_iban_countries.into_iter() {
