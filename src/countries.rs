@@ -79,6 +79,7 @@ static COUNTRY_FORMATS: [(&'static str, &'static str); 75] = [
     ("TN", r"^\d{20}$"),
     ("TR", r"^\d{6}[A-Z\d]{16}$"),
     ("UA", r"^\d{6}[A-Z\d]{19}$"),
+    ("VA", r"^\d{18}$"),
     ("VG", r"^[A-Z]{4}\d{16}$"),
     ("XK", r"^\d{16}$"),
 ];
