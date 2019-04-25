@@ -2,15 +2,10 @@ use crate::Iban;
 use proptest::prelude::*;
 
 proptest! {
-    #![proptest_config(ProptestConfig {
-        cases: 10_000, .. ProptestConfig::default()
-      })]
     #[test]
     fn parse_iban_format_electronic(country_code in "[A-Z]{2}",
             check_digits in 0u8..=99u8,
             bban in "[A-Z0-9]{1,30}") {
-
-        println!("{}{:02}{}", country_code, check_digits, bban);
 
         let iban_string = format!("{}{:02}{}", country_code, check_digits, bban);
 
@@ -39,9 +34,6 @@ proptest! {
 }
 
 proptest! {
-    #![proptest_config(ProptestConfig {
-        cases: 10_000, .. ProptestConfig::default()
-      })]
     #[test]
     fn doesnt_crash_random_input(s in "\\PC*") {
         let _ = s.parse::<Iban>();
