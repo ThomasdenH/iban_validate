@@ -30,6 +30,8 @@
 #![doc(html_root_url = "https://docs.rs/iban_validate/2.0.0")]
 #![forbid(unsafe_code)]
 
+use std::convert::TryFrom;
+use std::error::Error;
 use std::fmt;
 use std::ops;
 use std::str;
@@ -41,8 +43,10 @@ mod base_iban;
 mod countries;
 #[cfg(test)]
 mod tests;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use base_iban::{BaseIban, ParseBaseIbanError};
+pub use base_iban::{BaseIban, ParseBaseIbanError};
 
 /// A trait that provide basic functions on an IBAN.
 pub trait IbanLike {
@@ -128,24 +132,22 @@ impl Iban {
     pub fn bban(&self) -> &str {
         self.bban_unchecked()
     }
+
+    /// Obtain the inner `BaseIban`.
+    pub fn into_base_iban(self) -> BaseIban {
+        self.base_iban
+    }
 }
 
-impl fmt::Display for dyn IbanLike {
+impl fmt::Debug for Iban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = self.electronic_str();
-        let group_count = if s.len() % 4 == 0 {
-            s.len() / 4
-        } else {
-            s.len() / 4 + 1
-        };
-        for i in 0..group_count {
-            let start = 4 * i;
-            write!(f, "{}", &s[start..][..4])?;
-            if i < group_count - 1 {
-                write!(f, " ")?;
-            }
-        }
-        Ok(())
+        fmt::Debug::fmt(&self.base_iban, f)
+    }
+}
+
+impl fmt::Display for Iban {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&self.base_iban, f)
     }
 }
 
@@ -174,7 +176,7 @@ pub struct Iban {
 }
 
 /// An error indicating the Iban could not be parsed.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum ParseIbanError {
     /// This variant indicates that the basic IBAN structure was not followed.
     InvalidBaseIban {
@@ -189,6 +191,26 @@ pub enum ParseIbanError {
     /// The `BaseIban` provides functionality on the IBAN part of the
     /// address.
     UnknownCountry(BaseIban),
+}
+
+impl fmt::Display for ParseIbanError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use ParseIbanError::*;
+        match self {
+            InvalidBaseIban { .. } => write!(f, "the string is not a valid IBAN"),
+            InvalidBban(_) => write!(f, "the string has an invalid BBAN"),
+            UnknownCountry(_) => write!(f, "the country code of the IBAN was not recognized"),
+        }
+    }
+}
+impl Error for ParseIbanError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        if let ParseIbanError::InvalidBaseIban { source } = self {
+            Some(source)
+        } else {
+            None
+        }
+    }
 }
 
 impl str::FromStr for Iban {
@@ -217,5 +239,41 @@ impl str::FromStr for Iban {
         } else {
             Err(ParseIbanError::UnknownCountry(base_iban))
         }
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Iban {
+    type Error = ParseIbanError;
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for Iban {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.base_iban.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Iban {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct IbanStringVisitor;
+        use serde::de;
+
+        impl<'vi> de::Visitor<'vi> for IbanStringVisitor {
+            type Value = Iban;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(formatter, "an IBAN string")
+            }
+
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<Iban, E> {
+                value.parse::<Iban>().map_err(E::custom)
+            }
+        }
+
+        deserializer.deserialize_str(IbanStringVisitor)
     }
 }

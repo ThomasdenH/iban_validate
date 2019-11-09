@@ -1,11 +1,16 @@
 use crate::IbanLike;
 use arrayvec::ArrayString;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 
 /// The maximum length an IBAN can be, according to the spec.
-const MAX_IBAN_LEN: usize = 24;
+const MAX_IBAN_LEN: usize = 34;
+/// The minimum length an IBAN can be, according to the spec.
+const MIN_IBAN_LEN: usize = 5;
 
 /// Represents an IBAN that passed basic checks, but not necessarily the BBAN validation.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
@@ -16,17 +21,79 @@ pub struct BaseIban {
     s: ArrayString<[u8; MAX_IBAN_LEN]>,
 }
 
+#[cfg(feature = "serde")]
+impl Serialize for BaseIban {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        if serializer.is_human_readable() {
+            serializer.serialize_str(&self.to_string())
+        } else {
+            serializer.serialize_str(self.electronic_str())
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for BaseIban {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct IbanStringVisitor;
+        use serde::de;
+
+        impl<'vi> de::Visitor<'vi> for IbanStringVisitor {
+            type Value = BaseIban;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(formatter, "an IBAN string")
+            }
+
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<BaseIban, E> {
+                value.parse::<BaseIban>().map_err(E::custom)
+            }
+        }
+
+        deserializer.deserialize_str(IbanStringVisitor)
+    }
+}
+
 impl IbanLike for BaseIban {
     fn electronic_str(&self) -> &str {
         self.s.as_str()
     }
 }
 
+impl fmt::Debug for BaseIban {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.s.fmt(f)
+    }
+}
+
+impl fmt::Display for BaseIban {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut chars = self.electronic_str().chars().peekable();
+        loop {
+            for _ in 0..4 {
+                if let Some(c) = chars.next() {
+                    write!(f, "{}", c)?;
+                } else {
+                    return Ok(());
+                }
+            }
+            if chars.peek().is_some() {
+                write!(f, " ")?;
+            }
+        }
+    }
+}
+
+/// Indicates that the string does not follow the basic IBAN rules.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum ParseBaseIbanError {
+    /// The string contains an invalid character.
     InvalidCharacter(char),
-    TooLong,
-    WrongStructure,
+    /// The string, excluding whitespace, has an invalid length.
+    InvalidLength,
+    /// The string contains an invalid characters in a wrong location.
+    InvalidStructure,
+    /// The IBAN has an invalid structure.
     InvalidChecksum,
 }
 
@@ -34,11 +101,11 @@ impl fmt::Display for ParseBaseIbanError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ParseBaseIbanError::InvalidCharacter(c) => {
-                write!(f, "The IBAN contains an invalid character: {}", c)
+                write!(f, "the IBAN contains an invalid character: {}", c)
             }
-            ParseBaseIbanError::TooLong => write!(f, "The IBAN is too long."),
-            ParseBaseIbanError::WrongStructure => write!(f, "The IBAN has an invalid structure."),
-            ParseBaseIbanError::InvalidChecksum => write!(f, "The IBAN has an invalid checksum."),
+            ParseBaseIbanError::InvalidLength => write!(f, "the IBAN has an invalid length"),
+            ParseBaseIbanError::InvalidStructure => write!(f, "the IBAN has an invalid structure"),
+            ParseBaseIbanError::InvalidChecksum => write!(f, "the IBAN has an invalid checksum"),
         }
     }
 }
@@ -90,19 +157,30 @@ impl FromStr for BaseIban {
                 return Err(ParseBaseIbanError::InvalidCharacter(c));
             // Append the character and return an error when the address is too long.
             } else if address_no_spaces.try_push(c).is_err() {
-                return Err(ParseBaseIbanError::TooLong);
+                return Err(ParseBaseIbanError::InvalidLength);
             }
         }
 
-        if !BaseIban::validate_iban_characters(&address_no_spaces) {
-            return Err(ParseBaseIbanError::WrongStructure);
+        if address_no_spaces.len() < MIN_IBAN_LEN {
+            return Err(ParseBaseIbanError::InvalidLength);
         }
-        if BaseIban::compute_checksum(&address_no_spaces) == 1 {
+
+        if !BaseIban::validate_iban_characters(&address_no_spaces) {
+            return Err(ParseBaseIbanError::InvalidStructure);
+        }
+        if BaseIban::compute_checksum(&address_no_spaces) != 1 {
             return Err(ParseBaseIbanError::InvalidChecksum);
         }
 
         Ok(BaseIban {
             s: address_no_spaces,
         })
+    }
+}
+
+impl<'a> TryFrom<&'a str> for BaseIban {
+    type Error = ParseBaseIbanError;
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        value.parse()
     }
 }

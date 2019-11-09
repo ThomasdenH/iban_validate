@@ -1,7 +1,12 @@
 //! This module contains unit tests
 
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+mod format;
+mod impls;
+mod parse;
 mod proptest;
-mod test_format;
-mod test_parse;
-mod test_split;
-mod test_validate_country;
+#[cfg(feature = "serde")]
+mod serde;
+mod split;
+mod validate_country;

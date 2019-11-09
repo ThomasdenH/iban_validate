@@ -1,4 +1,4 @@
-use crate::Iban;
+use crate::{BaseIban, Iban, IbanLike};
 use proptest::prelude::*;
 
 proptest! {
@@ -11,20 +11,46 @@ proptest! {
 
         match iban_string.parse::<Iban>() {
             Ok(iban) => {
-                // Validate country
-                iban.validate_bban();
-
                 // Format
-                assert_eq!(iban.format_electronic(), iban_string);
+                assert_eq!(iban.electronic_str(), iban_string);
 
                 // Split
-                assert_eq!(iban.get_country_code(), country_code);
-                assert_eq!(iban.get_check_digits(), check_digits);
-                assert_eq!(iban.get_bban(), bban);
+                assert_eq!(iban.country_code(), country_code);
+                assert_eq!(iban.check_digits(), check_digits);
+                assert_eq!(iban.bban(), bban);
 
                 // Convert to string and parse again
-                let print_string = iban.format_print();
+                let print_string = iban.to_string();
                 assert_eq!(print_string.parse::<Iban>().unwrap(), iban);
+            },
+            Err(_) => {
+                // Invalid checksum
+            }
+        }
+    }
+}
+
+proptest! {
+    #[test]
+    fn parse_base_iban_format_electronic(country_code in "[A-Z]{2}",
+            check_digits in 0u8..=99u8,
+            bban in "[A-Z0-9]{1,30}") {
+
+        let iban_string = format!("{}{:02}{}", country_code, check_digits, bban);
+
+        match iban_string.parse::<BaseIban>() {
+            Ok(iban) => {
+                // Format
+                assert_eq!(iban.electronic_str(), iban_string);
+
+                // Split
+                assert_eq!(iban.country_code(), country_code);
+                assert_eq!(iban.check_digits(), check_digits);
+                assert_eq!(iban.bban_unchecked(), bban);
+
+                // Convert to string and parse again
+                let print_string = iban.to_string();
+                assert_eq!(print_string.parse::<BaseIban>().unwrap(), iban);
             },
             Err(_) => {
                 // Invalid checksum
