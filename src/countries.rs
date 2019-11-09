@@ -104,36 +104,3 @@ lazy_static! {
                  Please file an issue at https://github.com/ThomasdenH/iban_validate."
             );
 }
-
-/// A variant of this enum is returned by the method [`validate_bban()`].
-///
-/// [`validate_bban()`]: ./struct.Iban.html#method.validate_bban
-///
-/// # Examples
-///
-/// ```rust
-/// use iban::Iban;
-/// use iban::BbanResult;
-///
-/// // A valid BBAN
-/// let iban1 = "DE44500105175407324931".parse::<Iban>()?;
-/// assert_eq!(iban1.validate_bban(), BbanResult::Valid);
-///
-/// // An invalid BBAN
-/// let iban2: Iban = "BA6312900794010284AC".parse()?;
-/// assert_eq!(iban2.validate_bban(), BbanResult::Invalid);
-///
-/// // An unknown country
-/// let iban3: Iban = "ZZ07273912631298461".parse()?;
-/// assert_eq!(iban3.validate_bban(), BbanResult::CountryUnknown);
-/// # Ok::<(), iban::ParseIbanError>(())
-/// ```
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub enum BbanResult {
-    /// The country was recognized and the code was valid.
-    Valid,
-    /// The country was recognized and didn't fit the format.
-    Invalid,
-    /// The country was not recognized.
-    CountryUnknown,
-}
