@@ -29,6 +29,7 @@ assert_impl_all!(
     Debug,
     Display,
     FromStr,
+    TryFrom<BaseIban>,
     TryFrom<&'static str>,
     Send,
     Sync

@@ -91,7 +91,7 @@ fn test_valid_countries() {
 
 #[test]
 /// This test checks whether invalid country formats are recognized as such.
-fn test_invalid_country_format() {
+fn test_invalid_country_format() -> Result<(), Box<dyn std::error::Error>> {
     let valid_iban_counties = [
         "AD54BD012030200359100100",
         "AE32ABCD234567890123456",
@@ -107,21 +107,23 @@ fn test_invalid_country_format() {
     ];
 
     for &i in valid_iban_counties.into_iter() {
-        let base_iban = i.parse::<BaseIban>().unwrap();
+        let base_iban = i.parse::<BaseIban>()?;
         assert_eq!(
             i.parse::<Iban>(),
             Err(ParseIbanError::InvalidBban(base_iban))
         );
     }
+    Ok(())
 }
 
 #[test]
 /// This test checks whether an iban with an unknown country is recognized as such.
-fn test_unknown_country() {
+fn test_unknown_country() -> Result<(), Box<dyn std::error::Error>> {
     let iban_unknown_string = "ZZ07273912631298461";
-    let base_iban = iban_unknown_string.parse::<BaseIban>().unwrap();
+    let base_iban = iban_unknown_string.parse::<BaseIban>()?;
     assert_eq!(
         iban_unknown_string.parse::<Iban>(),
         Err(ParseIbanError::UnknownCountry(base_iban))
     );
+    Ok(())
 }
