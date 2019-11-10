@@ -14,30 +14,37 @@ The crate can be found on [crates.io](https://crates.io/crates/iban_validate). T
 dependency:
     
     [dependencies]
-    iban_validate = "2.0.0"
+    iban_validate = "3"
 
 ## Functionality
-This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the 
-function [`parse()`]. If you want to check whether the address has a valid BBAN (Basic Bank Account Number), you can 
-use [`validate_bban()`]. It also contains some helper methods to make handling an IBAN easier.
+This crate provides an easy way to validate an IBAN (International Bank Account Number). To do
+so, you can use the function [`parse()`](str::parse). This will check the IBAN rules
+as well as the BBAN structure. The provided [`Iban`](crate::Iban) structure provides many methods
+to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](crate::IbanLike)
+trait.
 
-### Example
+When BBAN parsing fails, the error type [`ParseIbanError`](crate::ParseIbanError) provides useful
+information about what went wrong. Additionally, the error contains [`BaseIban`](crate::BaseIban),
+which can still be used to access useful information.
+
+# Example
 The following example does a full validation of the IBAN and BBAN format.
-
 ```rust
-use iban::Iban;
-use iban::BbanResult;
+use iban::*;
 
 let account = "DE44500105175407324931".parse::<Iban>()?;
 
-assert_eq!(account.validate_bban(), BbanResult::Valid);
-assert_eq!(account.get_country_code(), "DE");
-assert_eq!(account.get_check_digits(), 44);
-assert_eq!(account.get_bban(), "500105175407324931");
+assert_eq!(account.country_code(), "DE");
+assert_eq!(account.check_digits(), 44);
+assert_eq!(account.bban(), "500105175407324931");
+assert_eq!(account.electronic_str(), "DE44500105175407324931");
+assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
+assert_eq!(account.bank_identifier(), Some("50010517"));
+assert_eq!(account.branch_identifier(), None);
 ```
 
-[`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
-[`validate_bban()`]: https://docs.rs/iban_validate/1.0.1/iban/struct.Iban.html#method.validate_bban
+# Features
+- *serde*: Enable `serde` support for [`Iban`] and [`BaseIban`].
 
 ## Documentation
 The full documentation is available at [docs.rs](https://docs.rs/iban_validate/).

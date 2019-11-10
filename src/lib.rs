@@ -4,9 +4,9 @@
 //! to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](crate::IbanLike)
 //! trait.
 //!
-//! When parsing fails, the error type [`ParseIbanError`](crate::ParseIbanError) provides useful
-//! information about what went wrong. If the BBAN could not be parsed, a [`BaseIban`](crate::BaseIban)
-//! can still be used to access useful information.
+//! When BBAN parsing fails, the error type [`ParseIbanError`](crate::ParseIbanError) provides useful
+//! information about what went wrong. Additionally, the error contains [`BaseIban`](crate::BaseIban),
+//! which can still be used to access useful information.
 //!
 //! # Example
 //! The following example does a full validation of the IBAN and BBAN format.
@@ -21,15 +21,20 @@
 //! assert_eq!(account.bban(), "500105175407324931");
 //! assert_eq!(account.electronic_str(), "DE44500105175407324931");
 //! assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
+//! assert_eq!(account.bank_identifier(), Some("50010517"));
+//! assert_eq!(account.branch_identifier(), None);
 //! # Ok::<(), iban::ParseIbanError>(())
 //! ```
 //!
 //! # Features
 //! - *serde*: Enable `serde` support for [`Iban`] and [`BaseIban`].
 
-#![doc(html_root_url = "https://docs.rs/iban_validate/2.0.0")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/3.0.0")]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
+#![deny(bare_trait_objects)]
+#![deny(elided_lifetimes_in_paths)]
+#![deny(missing_debug_implementations)]
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -161,7 +166,84 @@ impl Iban {
             "AD" => Some(0..4),
             "AE" => Some(0..3),
             "AL" => Some(0..3),
-            _ => panic!("unknown country"),
+            "AT" => Some(0..5),
+            "AZ" => Some(0..4),
+            "BA" => Some(0..3),
+            "BE" => Some(0..3),
+            "BG" => Some(0..4),
+            "BH" => Some(0..4),
+            "BR" => Some(0..8),
+            "BY" => Some(0..4),
+            "CH" => Some(0..5),
+            "CR" => Some(0..4),
+            "CY" => Some(0..3),
+            "CZ" => Some(0..4),
+            "DE" => Some(0..8),
+            "DK" => Some(0..4),
+            "DO" => Some(0..3),
+            "EE" => Some(0..2),
+            "EG" => Some(0..3),
+            "ES" => Some(0..4),
+            "FI" => Some(0..3),
+            "FO" => Some(0..4),
+            "FR" => Some(0..5),
+            "GB" => Some(0..4),
+            "GE" => Some(0..2),
+            "GI" => Some(0..4),
+            "GL" => Some(0..4),
+            "GR" => Some(0..3),
+            "GT" => Some(0..4),
+            "HR" => Some(0..7),
+            "HU" => Some(0..3),
+            "IE" => Some(0..4),
+            "IL" => Some(0..3),
+            "IQ" => Some(0..4),
+            "IS" => Some(0..2),
+            "IT" => Some(1..6),
+            "JO" => Some(4..8),
+            "KW" => Some(0..4),
+            "KZ" => Some(0..3),
+            "LB" => Some(0..4),
+            "LC" => Some(0..4),
+            "LI" => Some(0..5),
+            "LT" => Some(0..5),
+            "LU" => Some(0..3),
+            "LV" => Some(0..4),
+            "MC" => Some(0..5),
+            "MD" => Some(0..2),
+            "ME" => Some(0..3),
+            "MK" => Some(0..3),
+            "MR" => Some(0..5),
+            "MT" => Some(0..4),
+            "MU" => Some(0..6),
+            "NL" => Some(0..4),
+            "NO" => Some(0..4),
+            "PK" => Some(0..4),
+            "PL" => None,
+            "PS" => Some(0..4),
+            "PT" => Some(0..4),
+            "QA" => Some(0..4),
+            "RO" => Some(0..4),
+            "RS" => Some(0..3),
+            "SA" => Some(0..2),
+            "SC" => Some(0..6),
+            "SE" => Some(0..3),
+            "SI" => Some(0..5),
+            "SK" => Some(0..4),
+            "SM" => Some(1..6),
+            "ST" => Some(0..4),
+            "SV" => Some(0..4),
+            "TL" => Some(0..3),
+            "TN" => Some(0..2),
+            "TR" => Some(0..5),
+            "UA" => Some(0..6),
+            "VA" => Some(0..3),
+            "VG" => Some(0..4),
+            "XK" => Some(0..2),
+            _ => panic!(
+                "Unknown country! Please file an issue at \
+                 https://github.com/ThomasdenH/iban_validate."
+            ),
         }
         .map(|range| &self.electronic_str()[4..][range])
     }
@@ -181,7 +263,49 @@ impl Iban {
             "AD" => Some(4..8),
             "AE" => None,
             "AL" => Some(3..7),
-            _ => panic!("unknown country"),
+            "AT" | "AZ" => None,
+            "BA" => Some(3..6),
+            "BE" => None,
+            "BG" => Some(4..8),
+            "BH" => None,
+            "BR" => Some(8..13),
+            "BY" | "CH" | "CR" => None,
+            "CY" => Some(3..8),
+            "CZ" | "DE" | "DK" | "DO" | "EE" => None,
+            "EG" => Some(3..6),
+            "ES" => Some(4..8),
+            "FI" | "FO" | "FR" => None,
+            "GB" => Some(4..10),
+            "GE" | "GI" | "GL" => None,
+            "GR" => Some(4..7),
+            "GT" | "HR" => None,
+            "HU" => Some(3..7),
+            "IE" => Some(4..10),
+            "IL" => Some(3..6),
+            "IQ" => Some(4..7),
+            "IS" => Some(2..4),
+            "IT" => Some(6..11),
+            "JO" | "KW" | "KZ" | "LB" | "LC" | "LI" | "LT" | "LU" | "LV" => None,
+            "MC" => Some(5..10),
+            "MD" | "ME" | "MK" => None,
+            "MR" => Some(5..10),
+            "MT" => Some(4..9),
+            "MU" => Some(6..8),
+            "NL" | "NO" | "PK" => None,
+            "PL" => Some(0..8),
+            "PS" | "PT" | "QA" | "RO" | "RS" | "SA" => None,
+            "SC" => Some(6..8),
+            "SE" | "SI" | "SK" => None,
+            "SM" => Some(6..11),
+            "ST" => Some(4..8),
+            "SV" | "TL" => None,
+            "TN" => Some(2..5),
+            "TR" | "UA" | "VA" | "VG" => None,
+            "XK" => Some(2..4),
+            _ => panic!(
+                "Unknown country! Please file an issue at \
+                 https://github.com/ThomasdenH/iban_validate."
+            ),
         }
         .map(|range| &self.electronic_str()[4..][range])
     }
