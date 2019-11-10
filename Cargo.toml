@@ -23,9 +23,14 @@ maintenance = { status = "passively-maintained" }
 name = "iban"
 path = "src/lib.rs"
 
+[features]
+# Builds rustdoc links, but requires nightly
+intra_rustdoc_links = []
+
 [dependencies]
 lazy_static = "1.3"
 serde = { version = "1", optional = true, features = ["derive"] }
+thiserror = "1"
 
 [dependencies.arrayvec]
 version = "0.5.1"
