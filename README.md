@@ -5,7 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ThomasdenH/iban_validate/badge.svg?branch=master)](https://coveralls.io/github/ThomasdenH/iban_validate?branch=master)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Percentage of issues still open")
-[![Rust](https://img.shields.io/badge/rust-1.31%2B-blue.svg?maxAge=3600)](https://github.com/ThomasdenH/iban_validate)
+[![Rust](https://img.shields.io/badge/rust-1.39%2B-blue.svg?maxAge=3600)](https://github.com/ThomasdenH/iban_validate)
 
 This is a small crate that is able to validate an IBAN account number. It has many tests and uses [proptest](https://crates.io/crates/proptest) for fuzzing.
 
