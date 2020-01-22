@@ -146,6 +146,7 @@ impl fmt::Display for BaseIban {
 /// );
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ParseBaseIbanError {
     /// The string doesn't have the correct format to be an IBAN. This can be because it's too
     /// short, too long or because it contains unexpected characters at some location.
@@ -284,6 +285,12 @@ impl BaseIban {
 
 impl FromStr for BaseIban {
     type Err = ParseBaseIbanError;
+    /// Parse a basic iban without taking the BBAN into consideration.
+    ///
+    /// # Errors
+    /// If the string does not match the IBAN format or the checksum is
+    /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
+    /// returned.
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         let address_no_spaces =
             BaseIban::try_form_string_from_electronic(address.as_bytes().iter().copied())
@@ -301,6 +308,12 @@ impl FromStr for BaseIban {
 
 impl<'a> TryFrom<&'a str> for BaseIban {
     type Error = ParseBaseIbanError;
+    /// Parse a basic IBAN without taking the BBAN into consideration.
+    ///
+    /// # Errors
+    /// If the string does not match the IBAN format or the checksum is
+    /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
+    /// returned.
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value.parse()
     }

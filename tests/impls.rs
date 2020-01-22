@@ -17,7 +17,8 @@ assert_impl_all!(
     FromStr,
     TryFrom<&'static str>,
     Send,
-    Sync
+    Sync,
+    From<Iban>
 );
 assert_impl_all!(
     Iban: Copy,
@@ -31,7 +32,8 @@ assert_impl_all!(
     TryFrom<BaseIban>,
     TryFrom<&'static str>,
     Send,
-    Sync
+    Sync,
+    Into<BaseIban>
 );
 assert_impl_all!(
     ParseBaseIbanError: Copy,
@@ -42,7 +44,8 @@ assert_impl_all!(
     Debug,
     Send,
     Sync,
-    Display
+    Display,
+    Into<ParseIbanError>
 );
 assert_impl_all!(
     ParseIbanError: Copy,
@@ -53,7 +56,8 @@ assert_impl_all!(
     Debug,
     Send,
     Sync,
-    Display
+    Display,
+    From<ParseBaseIbanError>
 );
 
 #[cfg(feature = "std")]

@@ -39,6 +39,7 @@
 //! - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
 //! - CI tested results via the Swift provided and custom test cases, as well
 //!     as proptest.
+//! - `#![forbid(unsafe_code)]`, making sure all code is written in safe Rust.
 //!
 //! # Features
 //! The following features can be used to configure the crate:
@@ -95,7 +96,7 @@ pub trait IbanLike {
         &self.electronic_str()[0..2]
     }
 
-    /// Get the check digits of the IBAN, as a str. This method simply returns
+    /// Get the check digits of the IBAN, as a string slice. This method simply returns
     /// a slice of the inner representation. To obtain an integer instead,
     /// use [`check_digits`](IbanLike::check_digits).
     ///
@@ -389,6 +390,7 @@ pub struct Iban {
 /// # Ok::<(), ParseBaseIbanError>(())
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ParseIbanError {
     /// This variant indicates that the basic IBAN structure was not followed.
     InvalidBaseIban {
@@ -441,6 +443,14 @@ impl Error for ParseIbanError {
 
 impl<'a> TryFrom<&'a str> for Iban {
     type Error = ParseIbanError;
+    /// Parse an IBAN without taking the BBAN into consideration.
+    ///
+    /// # Errors
+    /// If the string does not match the IBAN format or the checksum is
+    /// invalid, [`ParseIbanError::InvalidBaseIban`](crate::ParseIbanError::InvalidBaseIban) will be
+    /// returned. If the country format is invalid or unknown, the other
+    /// variants will be returned with the [`BaseIban`](crate::BaseIban) giving
+    /// access to some basic functionality nonetheless.
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
             .parse::<BaseIban>()
@@ -451,6 +461,14 @@ impl<'a> TryFrom<&'a str> for Iban {
 
 impl TryFrom<BaseIban> for Iban {
     type Error = ParseIbanError;
+    /// Parse an IBAN without taking the BBAN into consideration.
+    ///
+    /// # Errors
+    /// If the string does not match the IBAN format or the checksum is
+    /// invalid, [`ParseIbanError::InvalidBaseIban`](crate::ParseIbanError::InvalidBaseIban) will be
+    /// returned. If the country format is invalid or unknown, the other
+    /// variants will be returned with the [`BaseIban`](crate::BaseIban) giving
+    /// access to some basic functionality nonetheless.
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
         use core::borrow::Borrow;
         use countries::{CharacterType::*, Matchable};
