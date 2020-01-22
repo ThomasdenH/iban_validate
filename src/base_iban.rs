@@ -203,11 +203,11 @@ impl BaseIban {
 
         for _ in 0..2 {
             let c = match chars.next() {
-                Some(c) if c.is_ascii_digit() => Ok(c),
+                Some(c) if c.is_digit(10) => Ok(c),
                 _ => Err(ParseBaseIbanError::InvalidFormat),
             }?;
             address_no_spaces.try_push(c).expect(
-                "Could not push country code. Please create an issue at \
+                "Could not push check digits. Please create an issue at \
                  https://github.com/ThomasdenH/iban_validate.",
             );
         }

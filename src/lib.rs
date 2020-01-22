@@ -41,9 +41,6 @@ use std::fmt;
 use std::str;
 use thiserror::Error;
 
-use crate::countries::RE_ADDRESS_REMAINDER;
-use crate::countries::RE_COUNTRY_CODE;
-
 mod base_iban;
 mod countries;
 #[cfg(test)]
@@ -409,18 +406,20 @@ impl<'a> TryFrom<&'a str> for Iban {
 impl TryFrom<BaseIban> for Iban {
     type Error = ParseIbanError;
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
-        let country_match = RE_COUNTRY_CODE
-            .matches(base_iban.country_code())
-            .iter()
-            .next();
-
-        if let Some(country_index) = country_match {
-            let address_match = RE_ADDRESS_REMAINDER
-                .matches(base_iban.bban_unchecked())
-                .iter()
-                .find(|&address_index| address_index == country_index);
-
-            if address_match.is_some() {
+        use countries::{Matchable, N, CharacterType::*};
+        use std::borrow::Borrow;
+        if let Some(matcher) = match base_iban.country_code() {
+            "AD" => Some([N(D, 8), N(AOrD, 12)].borrow()),
+            "AE" => Some([N(D, 19)].borrow()),
+            "AL" => Some([N(D, 8), N(AOrD, 16)].borrow()),
+            "AT" => Some([N(D, 16)].borrow()),
+            "AZ" => Some([N(A, 4), N(AOrD, 20)].borrow()),
+            "BA" => Some([N(D, 16)].borrow()),
+            "BE" => Some([N(D, 12)].borrow()),
+            "BG" => Some([N(A, 4), N(D, 6), N(AOrD, 8)].borrow()),
+            _ => None
+        } {
+            if (matcher as &[N]).match_str(base_iban.bban_unchecked()) {
                 Ok(Iban { base_iban })
             } else {
                 Err(ParseIbanError::InvalidBban(base_iban))
