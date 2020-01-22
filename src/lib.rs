@@ -28,8 +28,8 @@
 //!
 //! # Features
 //! - *std*: **Enabled by default.** Enable the standard library. It is only
-//!     used to provide implementations of `Error`.
-//! - *serde*: Enable `serde` support for [`Iban`] and [`BaseIban`].
+//!     used to provide implementations of [`Error`](std::error::Error).
+//! - *serde*: Enable `serde` support for [`Iban`](crate::Iban) and [`BaseIban`](crate::BaseIban).
 
 #![doc(html_root_url = "https://docs.rs/iban_validate/3.0.0")]
 #![forbid(unsafe_code)]
