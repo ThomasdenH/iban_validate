@@ -1,5 +1,5 @@
 //! This module statically checks whether types implement the expected traits.
-use crate::{BaseIban, Iban, ParseBaseIbanError, ParseIbanError};
+use iban::{BaseIban, Iban, ParseBaseIbanError, ParseIbanError};
 use static_assertions::assert_impl_all;
 use std::convert::TryFrom;
 use std::error::Error;

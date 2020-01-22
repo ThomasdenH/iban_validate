@@ -1,9 +1,9 @@
-use super::TestResult;
-use crate::{BaseIban, Iban};
+#![cfg(serde)]
+use iban::{BaseIban, Iban};
 use serde_test::{assert_tokens, Token};
 
 #[test]
-fn base_iban_compact() -> TestResult {
+fn base_iban_compact() -> anyhow::Result<()> {
     use serde_test::Configure;
     let address: &str = "KW81CBKU0000000000001234560101";
     let i: BaseIban = address.parse()?;
@@ -12,7 +12,7 @@ fn base_iban_compact() -> TestResult {
 }
 
 #[test]
-fn base_iban_readable() -> TestResult {
+fn base_iban_readable() -> anyhow::Result<()> {
     use serde_test::Configure;
     let address: &str = "KW81 CBKU 0000 0000 0000 1234 5601 01";
     let i: BaseIban = address.parse()?;
@@ -21,7 +21,7 @@ fn base_iban_readable() -> TestResult {
 }
 
 #[test]
-fn iban_compact() -> TestResult {
+fn iban_compact() -> anyhow::Result<()> {
     use serde_test::Configure;
     let address: &str = "KW81CBKU0000000000001234560101";
     let i: Iban = address.parse()?;
@@ -30,7 +30,7 @@ fn iban_compact() -> TestResult {
 }
 
 #[test]
-fn iban_readable() -> TestResult {
+fn iban_readable() -> anyhow::Result<()> {
     use serde_test::Configure;
     let address: &str = "KW81 CBKU 0000 0000 0000 1234 5601 01";
     let i: Iban = address.parse()?;

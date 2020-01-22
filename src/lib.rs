@@ -43,8 +43,6 @@ use thiserror::Error;
 
 mod base_iban;
 mod countries;
-#[cfg(test)]
-mod tests;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 

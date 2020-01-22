@@ -1,6 +1,6 @@
 //! This module tests the parsing of various IBAN numbers
 
-use crate::{Iban, ParseBaseIbanError, ParseIbanError};
+use iban::{Iban, ParseBaseIbanError, ParseIbanError};
 
 #[test]
 /// This test checks whether IBANs having an invalid structure are detected to be invalid.

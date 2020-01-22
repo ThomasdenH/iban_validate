@@ -1,11 +1,10 @@
 //! This module tests the split utility functions provided by the [`Iban`] type.
 
-use super::TestResult;
-use crate::{Iban, IbanLike};
+use iban::{Iban, IbanLike};
 
 #[test]
 /// This test checks whether the different splits of an address are correct.
-fn test_split() -> TestResult {
+fn test_split() -> anyhow::Result<()> {
     let address: Iban = "AD1200012030200359100100".parse()?;
     assert_eq!(address.country_code(), "AD");
     assert_eq!(address.check_digits_str(), "12");

@@ -1,4 +1,4 @@
-use crate::{BaseIban, Iban, IbanLike};
+use iban::{BaseIban, Iban, IbanLike};
 use proptest::prelude::*;
 
 proptest! {

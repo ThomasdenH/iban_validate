@@ -1,6 +1,6 @@
 //! This module contains tests for the BBAN format
 
-use crate::*;
+use iban::*;
 
 #[test]
 /// This test checks whether ibans with a valid country format are recognized as such.
@@ -91,7 +91,7 @@ fn test_valid_countries() {
 
 #[test]
 /// This test checks whether invalid country formats are recognized as such.
-fn test_invalid_country_format() -> Result<(), Box<dyn std::error::Error>> {
+fn test_invalid_country_format() -> anyhow::Result<()> {
     let valid_iban_counties = [
         "AD54BD012030200359100100",
         "AE32ABCD234567890123456",
@@ -118,7 +118,7 @@ fn test_invalid_country_format() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 /// This test checks whether an iban with an unknown country is recognized as such.
-fn test_unknown_country() -> Result<(), Box<dyn std::error::Error>> {
+fn test_unknown_country() -> anyhow::Result<()> {
     let iban_unknown_string = "ZZ07273912631298461";
     let base_iban = iban_unknown_string.parse::<BaseIban>()?;
     assert_eq!(

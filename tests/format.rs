@@ -1,11 +1,10 @@
 //! This module tests the formatting of IBANs
 
-use super::TestResult;
-use crate::{Iban, IbanLike};
+use iban::{Iban, IbanLike};
 
 /// This test checks the electronic formatting method.
 #[test]
-fn electronic() -> TestResult {
+fn electronic() -> anyhow::Result<()> {
     // An IBAN without spaces
     assert_eq!(
         "BE68539007547034".parse::<Iban>()?.electronic_str(),
@@ -22,7 +21,7 @@ fn electronic() -> TestResult {
 
 /// This test checks the print formatting method.
 #[test]
-fn print() -> TestResult {
+fn print() -> anyhow::Result<()> {
     // An IBAN without spaces
     assert_eq!(
         "KW81CBKU0000000000001234560101"
