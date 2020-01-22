@@ -13,12 +13,6 @@ const PAPER_GROUP_SIZE: usize = 4;
 /// The maximum length an IBAN can be, according to the spec.
 const MAX_IBAN_LEN: usize = 34;
 
-/// The maximum length an IBAN can be including whitespace.
-const MAX_IBAN_LEN_PAPER: usize = MAX_IBAN_LEN + MAX_IBAN_LEN / PAPER_GROUP_SIZE;
-
-/// The minimum length an IBAN can be, according to the spec.
-const MIN_IBAN_LEN: usize = 5;
-
 /// Represents an IBAN that passed basic checks, but not necessarily the BBAN
 /// validation. This corresponds to the validation as described in ISO 13616-1.
 ///
@@ -164,10 +158,12 @@ pub enum ParseBaseIbanError {
 }
 
 impl BaseIban {
-    /// Compute the checksum for the address.
+    /// Compute the checksum for the address. The code that the string contains
+    /// only valid characters: `'0'..='9'` and `'A'..='Z'`.
     fn validate_checksum(address: &str) -> bool {
         address
-            .chars()
+            .as_bytes()
+            .iter()
             // Move the first four characters to the back
             .cycle()
             .skip(4)
@@ -175,7 +171,7 @@ impl BaseIban {
             // Calculate the checksum
             .fold(0, |acc, c| {
                 // Convert '0'-'Z' to 0-35
-                let digit = c.to_digit(36).expect(
+                let digit = (*c as char).to_digit(36).expect(
                     "An address was supplied to compute_checksum with an invalid \
                      character. Please file an issue at \
                      https://github.com/ThomasdenH/iban_validate.",
@@ -191,12 +187,14 @@ impl BaseIban {
             &address[2..4] != "01"
     }
 
-    /// Parse a standardized IBAN string from an iterator.
+    /// Parse a standardized IBAN string from an iterator. We iterate through
+    /// bytes, not characters. When a character is not ASCII, the IBAN is
+    /// automatically invalid.
     fn try_form_string_from_electronic<T>(
         mut chars: T,
     ) -> Result<ArrayString<[u8; MAX_IBAN_LEN]>, ParseBaseIbanError>
     where
-        T: Iterator<Item = char>,
+        T: Iterator<Item = u8>,
     {
         let mut address_no_spaces = ArrayString::<[u8; MAX_IBAN_LEN]>::new();
 
@@ -205,27 +203,27 @@ impl BaseIban {
                 Some(c) if c.is_ascii_uppercase() => Ok(c),
                 _ => Err(ParseBaseIbanError::InvalidFormat),
             }?;
-            address_no_spaces.try_push(c).expect(
-                "Could not push country code. Please create an issue at \
-                 https://github.com/ThomasdenH/iban_validate.",
-            );
+            address_no_spaces
+                .try_push(c as char)
+                .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
         for _ in 0..2 {
             let c = match chars.next() {
-                Some(c) if c.is_digit(10) => Ok(c),
+                Some(c) if c.is_ascii_digit() => Ok(c),
                 _ => Err(ParseBaseIbanError::InvalidFormat),
             }?;
-            address_no_spaces.try_push(c).expect(
-                "Could not push check digits. Please create an issue at \
-                 https://github.com/ThomasdenH/iban_validate.",
-            );
+            address_no_spaces
+                .try_push(c as char)
+                .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
+        // The BBAN part can actually be both lower or upper case, but we
+        // normalize it to uppercase here.
         for c in chars {
-            if c.is_ascii_digit() || c.is_ascii_uppercase() {
+            if c.is_ascii_alphanumeric() {
                 address_no_spaces
-                    .try_push(c)
+                    .try_push(c.to_ascii_uppercase() as char)
                     .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
             } else {
                 return Err(ParseBaseIbanError::InvalidFormat);
@@ -235,31 +233,34 @@ impl BaseIban {
         Ok(address_no_spaces)
     }
 
-    /// PArse a pretty print IBAN from a `str`.
+    /// Parse a pretty print IBAN from a `str`.
     fn try_form_string_from_pretty_print(
         s: &str,
     ) -> Result<ArrayString<[u8; MAX_IBAN_LEN]>, ParseBaseIbanError> {
-        // Filter out correct whitespace and then pass through electronic parsing.
-        s.chars()
-            .enumerate()
-            .find_map(|(i, c)| {
-                if i % 5 == 4 && c != ' ' {
-                    Some(Err(ParseBaseIbanError::InvalidFormat))
-                } else {
-                    None
-                }
-            })
-            .unwrap_or(Ok(()))?;
+        // The pretty print format consists of a number of groups of four
+        // characters, separated by a space.
 
-        if s.ends_with(' ') {
+        let bytes = s.as_bytes();
+
+        // Check that every fifth character is a space...
+        for (_, byte_at_space_position) in bytes.iter().enumerate().filter(|(i, _c)| i % 5 == 4) {
+            if *byte_at_space_position != b' ' {
+                return Err(ParseBaseIbanError::InvalidFormat);
+            }
+        }
+
+        // ... except for the last group.
+        if bytes.len() % 5 == 0 {
             return Err(ParseBaseIbanError::InvalidFormat);
         }
 
+        // Now parse the remaining characters.
         BaseIban::try_form_string_from_electronic(
-            s.chars()
+            bytes
+                .iter()
                 .enumerate()
-                .filter(|(i, _)| i % 5 != 4)
-                .map(|(_, c)| c),
+                .filter_map(|(i, c)| if i % 5 != 4 { Some(c) } else { None })
+                .copied(),
         )
     }
 }
@@ -267,17 +268,9 @@ impl BaseIban {
 impl FromStr for BaseIban {
     type Err = ParseBaseIbanError;
     fn from_str(address: &str) -> Result<Self, Self::Err> {
-        // Filter out obviously incorrect IBANS
-        if address.len() < MIN_IBAN_LEN || address.len() > MAX_IBAN_LEN_PAPER {
-            return Err(ParseBaseIbanError::InvalidFormat);
-        }
-
-        let address_no_spaces = BaseIban::try_form_string_from_electronic(address.chars())
-            .or_else(|_| BaseIban::try_form_string_from_pretty_print(address))?;
-
-        if address_no_spaces.len() < MIN_IBAN_LEN {
-            return Err(ParseBaseIbanError::InvalidFormat);
-        }
+        let address_no_spaces =
+            BaseIban::try_form_string_from_electronic(address.as_bytes().iter().copied())
+                .or_else(|_| BaseIban::try_form_string_from_pretty_print(address))?;
 
         if !BaseIban::validate_checksum(&address_no_spaces) {
             return Err(ParseBaseIbanError::InvalidChecksum);
