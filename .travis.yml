@@ -33,7 +33,16 @@ script:
     cargo -vV &&
     cargo build &&
     cargo test &&
-    cargo doc
+    cargo doc &&
+    cargo build --no-default-features &&
+    cargo test --no-default-features &&
+    cargo doc --no-default-features &&
+    cargo build --no-default-features --features serde &&
+    cargo test --no-default-features --features serde &&
+    cargo doc --no-default-features --features serde &&
+    cargo build --features serde &&
+    cargo test --features serde &&
+    cargo doc --features serde
 
 after_success:
   # measure code coverage and upload to coveralls.io
