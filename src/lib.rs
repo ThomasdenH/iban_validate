@@ -26,7 +26,23 @@
 //! # Ok::<(), iban::ParseIbanError>(())
 //! ```
 //!
+//! # What does this library provide?
+//! - A [`Iban`](crate::Iban) type that can be used to parse account numbers
+//!     very quickly. It doesn't require allocations at all, and instead
+//!     leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the
+//!     hood.
+//! - A flexible API that is useful even when the country is not in the Swift
+//!     registry (using [`BaseIban`](crate::BaseIban)). Instead of using panic,
+//!     the crate provides typed errors with what went wrong.
+//! - All functionality can be used in a `no_std` environment (except for the
+//!     implementation of `std` traits).
+//! - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
+//! - CI tested results via the Swift provided and custom test cases, as well
+//!     as proptest.
+//!
 //! # Features
+//! The following features can be used to configure the crate:
+//!
 //! - *std*: **Enabled by default.** Enable the standard library. It is only
 //!     used to provide implementations of [`Error`](std::error::Error).
 //! - *serde*: Enable `serde` support for [`Iban`](crate::Iban) and [`BaseIban`](crate::BaseIban).
