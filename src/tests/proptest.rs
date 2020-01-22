@@ -4,7 +4,7 @@ use proptest::prelude::*;
 proptest! {
     #[test]
     fn parse_iban_format_electronic(country_code in "[A-Z]{2}",
-            check_digits in 0u8..=99u8,
+            check_digits in 2u8..=99u8,
             bban in "[A-Z0-9]{1,30}") {
 
         let iban_string = format!("{}{:02}{}", country_code, check_digits, bban);
@@ -35,7 +35,7 @@ proptest! {
 proptest! {
     #[test]
     fn parse_base_iban_format_electronic(country_code in "[A-Z]{2}",
-            check_digits in 0u8..=99u8,
+            check_digits in 2u8..=99u8,
             bban in "[A-Z0-9]{1,30}") {
 
         let iban_string = format!("{}{:02}{}", country_code, check_digits, bban);

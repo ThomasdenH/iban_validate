@@ -7,20 +7,26 @@ use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
 
+/// The size of a group of characters in the paper format.
+const PAPER_GROUP_SIZE: usize = 4;
+
 /// The maximum length an IBAN can be, according to the spec.
 const MAX_IBAN_LEN: usize = 34;
 
 /// The maximum length an IBAN can be including whitespace.
-const MAX_IBAN_LEN_PRETTY: usize = MAX_IBAN_LEN + MAX_IBAN_LEN / 4;
+const MAX_IBAN_LEN_PAPER: usize = MAX_IBAN_LEN + MAX_IBAN_LEN / PAPER_GROUP_SIZE;
 
 /// The minimum length an IBAN can be, according to the spec.
 const MIN_IBAN_LEN: usize = 5;
 
-/// Represents an IBAN that passed basic checks, but not necessarily the BBAN validation.
-/// To be exact, the IBAN must be of the correct length, start with two uppercase ASCII letters,
-/// followed by two digits, followed by any number of digits and uppercase ASCII letters. Additionally
-/// its checksum should be valid. It should either contain no whitespace, or every block of four
-/// characters can be separated by a space.
+/// Represents an IBAN that passed basic checks, but not necessarily the BBAN
+/// validation. This corresponds to the validation as described in ISO 13616-1.
+///
+/// To be exact, the IBAN must start with two uppercase ASCII letters, followed
+/// by two digits, followed by any number of digits and uppercase ASCII
+/// letters. Additionally its checksum should be valid. It should either contain
+/// no whitespace, or be in the paper format, where characters are in
+/// space-separated groups of four.
 ///
 /// Note that most useful methods are supplied by the trait [`IbanLike`](crate::IbanLike). The [`Display`](std::fmt::Display) trait provides pretty
 /// print formatting.
@@ -111,19 +117,19 @@ impl fmt::Debug for BaseIban {
 
 impl fmt::Display for BaseIban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut chars = self.electronic_str().chars().peekable();
-        loop {
-            for _ in 0..4 {
-                if let Some(c) = chars.next() {
-                    write!(f, "{}", c)?;
-                } else {
-                    return Ok(());
-                }
+        for c in self.s.chars().enumerate().flat_map(|(i, c)| {
+            // Add a space before a character if it is the start of a group of four.
+            if i != 0 && i % PAPER_GROUP_SIZE == 0 {
+                Some(' ')
+            } else {
+                None
             }
-            if chars.peek().is_some() {
-                write!(f, " ")?;
-            }
+            .into_iter()
+            .chain(std::iter::once(c))
+        }) {
+            write!(f, "{}", c)?;
         }
+        Ok(())
     }
 }
 
@@ -159,7 +165,7 @@ pub enum ParseBaseIbanError {
 
 impl BaseIban {
     /// Compute the checksum for the address.
-    fn compute_checksum(address: &str) -> u8 {
+    fn validate_checksum(address: &str) -> bool {
         address
             .chars()
             // Move the first four characters to the back
@@ -178,7 +184,11 @@ impl BaseIban {
                 let multiplier = if digit > 9 { 100 } else { 10 };
                 // Calculate modulo
                 (acc * multiplier + digit) % 97
-            }) as u8
+            })
+            == 1 &&
+            // Check digits with value 01 or 00 are invalid!
+            &address[2..4] != "00" && 
+            &address[2..4] != "01"
     }
 
     /// Parse a standardized IBAN string from an iterator.
@@ -258,7 +268,7 @@ impl FromStr for BaseIban {
     type Err = ParseBaseIbanError;
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         // Filter out obviously incorrect IBANS
-        if address.len() < 5 || address.len() > MAX_IBAN_LEN_PRETTY {
+        if address.len() < MIN_IBAN_LEN || address.len() > MAX_IBAN_LEN_PAPER {
             return Err(ParseBaseIbanError::InvalidFormat);
         }
 
@@ -269,7 +279,7 @@ impl FromStr for BaseIban {
             return Err(ParseBaseIbanError::InvalidFormat);
         }
 
-        if BaseIban::compute_checksum(&address_no_spaces) != 1 {
+        if !BaseIban::validate_checksum(&address_no_spaces) {
             return Err(ParseBaseIbanError::InvalidChecksum);
         }
 
