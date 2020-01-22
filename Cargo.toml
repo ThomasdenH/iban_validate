@@ -30,8 +30,11 @@ std = []
 # Builds rustdoc links, but requires nightly
 intra_rustdoc_links = []
 
-[dependencies]
-serde = { version = "1", optional = true, default-features = false, features = ["derive"] }
+[dependencies.serde]
+version = "1"
+optional = true
+default-features = false
+features = ["derive"]
 
 [dependencies.arrayvec]
 version = "0.5.1"
