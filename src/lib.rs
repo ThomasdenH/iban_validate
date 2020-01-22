@@ -35,11 +35,11 @@
 #![deny(bare_trait_objects)]
 #![deny(elided_lifetimes_in_paths)]
 #![deny(missing_debug_implementations)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-use std::convert::TryFrom;
-use std::fmt;
-use std::str;
-use thiserror::Error;
+use core::convert::TryFrom;
+use core::fmt;
+use core::str;
 
 mod base_iban;
 mod countries;
@@ -354,7 +354,7 @@ pub struct Iban {
 /// # Example
 /// ```rust
 /// use iban::{BaseIban, Iban, ParseIbanError, ParseBaseIbanError};
-/// use std::convert::TryFrom;
+/// use core::convert::TryFrom;
 ///
 /// // The following IBAN has an invalid checksum
 /// assert_eq!(
@@ -370,25 +370,55 @@ pub struct Iban {
 /// );
 /// # Ok::<(), ParseBaseIbanError>(())
 /// ```
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, Error)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum ParseIbanError {
     /// This variant indicates that the basic IBAN structure was not followed.
-    #[error("the string does not follow the base IBAN rules")]
     InvalidBaseIban {
         /// The error indicating what went wrong when parsing the Iban.
-        #[from]
         source: ParseBaseIbanError,
     },
     /// This variant indicates that the BBAN did not follow the correct format.
     /// The `BaseIban` provides functionality on the IBAN part of the
     /// address.
-    #[error("the IBAN doesn't have a correct BBAN")]
     InvalidBban(BaseIban),
     /// This variant indicated that the country code of the IBAN was not recognized.
     /// The `BaseIban` provides functionality on the IBAN part of the
     /// address.
-    #[error("the IBAN country code wasn't recognized")]
     UnknownCountry(BaseIban),
+}
+
+impl From<ParseBaseIbanError> for ParseIbanError {
+    fn from(source: ParseBaseIbanError) -> ParseIbanError {
+        ParseIbanError::InvalidBaseIban { source }
+    }
+}
+
+impl fmt::Display for ParseIbanError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ParseIbanError::InvalidBaseIban { .. } =>
+                    "the string does not follow the base IBAN rules",
+                ParseIbanError::InvalidBban(..) => "the IBAN doesn't have a correct BBAN",
+                ParseIbanError::UnknownCountry(..) => "the IBAN country code wasn't recognized",
+            }
+        )
+    }
+}
+
+#[cfg(feature = "std")]
+use std::error::Error;
+
+#[cfg(feature = "std")]
+impl Error for ParseIbanError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            ParseIbanError::InvalidBaseIban { source } => Some(source),
+            _ => None,
+        }
+    }
 }
 
 impl<'a> TryFrom<&'a str> for Iban {
@@ -396,7 +426,7 @@ impl<'a> TryFrom<&'a str> for Iban {
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
             .parse::<BaseIban>()
-            .map_err(ParseIbanError::from)
+            .map_err(|source| ParseIbanError::InvalidBaseIban { source })
             .and_then(Iban::try_from)
     }
 }
@@ -404,8 +434,8 @@ impl<'a> TryFrom<&'a str> for Iban {
 impl TryFrom<BaseIban> for Iban {
     type Error = ParseIbanError;
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
+        use core::borrow::Borrow;
         use countries::{CharacterType::*, Matchable};
-        use std::borrow::Borrow;
         if let Some(matcher) = match base_iban.country_code() {
             "AD" => Some([(4usize, N), (4, N), (12, C)].borrow()),
             "AE" => Some([(3usize, N), (16, N)].borrow()),

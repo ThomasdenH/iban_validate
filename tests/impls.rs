@@ -1,11 +1,10 @@
 //! This module statically checks whether types implement the expected traits.
+use core::convert::TryFrom;
+use core::fmt::{Debug, Display};
+use core::hash::Hash;
+use core::str::FromStr;
 use iban::{BaseIban, Iban, ParseBaseIbanError, ParseIbanError};
 use static_assertions::assert_impl_all;
-use std::convert::TryFrom;
-use std::error::Error;
-use std::fmt::{Debug, Display};
-use std::hash::Hash;
-use std::str::FromStr;
 
 assert_impl_all!(
     BaseIban: Copy,
@@ -41,10 +40,9 @@ assert_impl_all!(
     PartialEq,
     Hash,
     Debug,
-    Display,
-    Error,
     Send,
-    Sync
+    Sync,
+    Display
 );
 assert_impl_all!(
     ParseIbanError: Copy,
@@ -53,11 +51,15 @@ assert_impl_all!(
     PartialEq,
     Hash,
     Debug,
-    Display,
-    Error,
     Send,
-    Sync
+    Sync,
+    Display
 );
+
+#[cfg(feature = "std")]
+assert_impl_all!(ParseBaseIbanError: std::error::Error);
+#[cfg(feature = "std")]
+assert_impl_all!(ParseIbanError: std::error::Error);
 
 #[cfg(feature = "serde")]
 mod impls_serde {

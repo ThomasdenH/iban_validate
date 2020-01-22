@@ -24,12 +24,14 @@ name = "iban"
 path = "src/lib.rs"
 
 [features]
+default = ["std"]
+# std is only used for the `Error` trait
+std = []
 # Builds rustdoc links, but requires nightly
 intra_rustdoc_links = []
 
 [dependencies]
-serde = { version = "1", optional = true, features = ["derive"] }
-thiserror = "1"
+serde = { version = "1", optional = true, default-features = false, features = ["derive"] }
 
 [dependencies.arrayvec]
 version = "0.5.1"
@@ -44,7 +46,6 @@ proptest = "0.9.2"
 static_assertions = "1"
 serde_test = "1"
 criterion = "0.3"
-anyhow = "1"
 
 [[bench]]
 name = "iban_benchmark"

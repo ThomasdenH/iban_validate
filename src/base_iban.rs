@@ -1,11 +1,10 @@
 use crate::IbanLike;
 use arrayvec::ArrayString;
+use core::convert::TryFrom;
+use core::fmt;
+use core::str::FromStr;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::convert::TryFrom;
-use std::fmt;
-use std::str::FromStr;
-use thiserror::Error;
 
 /// The size of a group of characters in the paper format.
 const PAPER_GROUP_SIZE: usize = 4;
@@ -68,7 +67,7 @@ pub struct BaseIban {
 impl Serialize for BaseIban {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
-            serializer.serialize_str(&self.to_string())
+            serializer.collect_str(self)
         } else {
             serializer.serialize_str(self.electronic_str())
         }
@@ -119,7 +118,7 @@ impl fmt::Display for BaseIban {
                 None
             }
             .into_iter()
-            .chain(std::iter::once(c))
+            .chain(core::iter::once(c))
         }) {
             write!(f, "{}", c)?;
         }
@@ -146,16 +145,34 @@ impl fmt::Display for BaseIban {
 ///     Err(ParseBaseIbanError::InvalidChecksum)
 /// );
 /// ```
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum ParseBaseIbanError {
     /// The string doesn't have the correct format to be an IBAN. This can be because it's too
     /// short, too long or because it contains unexpected characters at some location.
-    #[error("the string doesn't conform to the IBAN format")]
     InvalidFormat,
     /// The IBAN has an invalid structure.
-    #[error("the IBAN has an invalid checksum")]
     InvalidChecksum,
 }
+
+impl fmt::Display for ParseBaseIbanError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ParseBaseIbanError::InvalidFormat =>
+                    "the string doesn't conform to the IBAN format",
+                ParseBaseIbanError::InvalidChecksum => "the IBAN has an invalid checksum",
+            }
+        )
+    }
+}
+
+#[cfg(feature = "std")]
+use std::error::Error;
+
+#[cfg(feature = "std")]
+impl Error for ParseBaseIbanError {}
 
 impl BaseIban {
     /// Compute the checksum for the address. The code that the string contains
