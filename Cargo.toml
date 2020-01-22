@@ -35,10 +35,12 @@ serde = { version = "1", optional = true, default-features = false, features = [
 
 [dependencies.arrayvec]
 version = "0.5.1"
+default-features = false
 features = ["array-sizes-33-128"]
 
 [target.'cfg(feature = "serde")'.dependencies.arrayvec]
 version = "0.5.1"
+default-features = false
 features = ["array-sizes-33-128", "serde"]
 
 [dev-dependencies]

@@ -1,3 +1,10 @@
+//! A module for parsing the BBAN structures from a definition. The format is
+//! very simple and can be optimized well by the compiler.
+
+/// A `CharacterType` can match a single character. This corresponds to the
+/// categories in the Swift registry for the most part, except that it doesn't
+/// allow lowercase characters for `c`. However, when parsing we have
+/// normalized the case anyway.
 #[derive(Copy, Clone)]
 pub(super) enum CharacterType {
     C,
@@ -21,6 +28,10 @@ pub(super) trait Matchable {
 }
 
 impl Matchable for &'_ [(usize, CharacterType)] {
+    /// Check if the string matches the format. The format is a list of counts
+    /// followed by their character type. For example, [(3, A) (2, N)] would
+    /// mean three letters followed by two numbers. The string should also have
+    /// the correct length.
     fn match_str(self, s: &str) -> bool {
         s.len() == len(self)
             && self
