@@ -31,18 +31,18 @@ script:
   - |
     rustc -vV &&
     cargo -vV &&
-    cargo build -p &&
-    cargo test -p &&
-    cargo doc -p &&
-    cargo build --no-default-features -p &&
-    cargo test --no-default-features -p &&
-    cargo doc --no-default-features -p &&
-    cargo build --no-default-features --features serde -p &&
-    cargo test --no-default-features --features serde -p &&
-    cargo doc --no-default-features --features serde -p &&
-    cargo build --features serde -p &&
-    cargo test --features serde -p &&
-    cargo doc --features serde -p
+    cargo build -p iban_validate &&
+    cargo test -p iban_validate &&
+    cargo doc -p iban_validate &&
+    cargo build --no-default-features -p iban_validate &&
+    cargo test --no-default-features -p iban_validate &&
+    cargo doc --no-default-features -p iban_validate &&
+    cargo build --no-default-features --features serde -p iban_validate &&
+    cargo test --no-default-features --features serde -p iban_validate &&
+    cargo doc --no-default-features --features serde -p iban_validate &&
+    cargo build --features serde -p iban_validate &&
+    cargo test --features serde -p iban_validate &&
+    cargo doc --features serde -p iban_validate
 
 after_success:
   # measure code coverage and upload to coveralls.io
