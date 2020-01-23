@@ -9,7 +9,9 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// The size of a group of characters in the paper format.
 const PAPER_GROUP_SIZE: usize = 4;
 
-/// The maximum length an IBAN can be, according to the spec.
+/// The maximum length an IBAN can be, according to the spec. This variable is
+/// used for the capacity of the arrayvec, which in turn determines how long a
+/// valid IBAN can be.
 const MAX_IBAN_LEN: usize = 34;
 
 /// Represents an IBAN that passed basic checks, but not necessarily the BBAN
@@ -216,28 +218,33 @@ impl BaseIban {
     {
         let mut address_no_spaces = ArrayString::<[u8; MAX_IBAN_LEN]>::new();
 
+        // First expect exactly two uppercase letters and append them to the
+        // string.
         for _ in 0..2 {
-            let c = match chars.next() {
-                Some(c) if c.is_ascii_uppercase() => Ok(c),
-                _ => Err(ParseBaseIbanError::InvalidFormat),
-            }?;
+            let c = chars
+                .next()
+                .filter(u8::is_ascii_uppercase)
+                .ok_or(ParseBaseIbanError::InvalidFormat)?;
             address_no_spaces
                 .try_push(c as char)
                 .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
+        // Now expect exactly two digits.
         for _ in 0..2 {
-            let c = match chars.next() {
-                Some(c) if c.is_ascii_digit() => Ok(c),
-                _ => Err(ParseBaseIbanError::InvalidFormat),
-            }?;
+            let c = chars
+                .next()
+                .filter(u8::is_ascii_digit)
+                .ok_or(ParseBaseIbanError::InvalidFormat)?;
             address_no_spaces
                 .try_push(c as char)
                 .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
-        // The BBAN part can actually be both lower or upper case, but we
-        // normalize it to uppercase here.
+        // Finally take up to 30 other characters. The BBAN part can actually
+        // be both lower or upper case, but we normalize it to uppercase here.
+        // The number of characters is limited by the capacity of the
+        // destination string.
         for c in chars {
             if c.is_ascii_alphanumeric() {
                 address_no_spaces
@@ -260,19 +267,25 @@ impl BaseIban {
 
         let bytes = s.as_bytes();
 
-        // Check that every fifth character is a space...
+        // If the number of bytes of a printed IBAN is divisible by 5, then it
+        // means that the last character should be a space, but this is
+        // invalid. If it is not, then the last character is a character that
+        // appears in the IBAN.
+        if bytes.len() % 5 == 0 {
+            return Err(ParseBaseIbanError::InvalidFormat);
+        }
+
+        // We check that every fifth character is a space, knowing already that
+        // account number ends with a character that appears in the IBAN.
         for (_, byte_at_space_position) in bytes.iter().enumerate().filter(|(i, _c)| i % 5 == 4) {
             if *byte_at_space_position != b' ' {
                 return Err(ParseBaseIbanError::InvalidFormat);
             }
         }
 
-        // ... except for the last group.
-        if bytes.len() % 5 == 0 {
-            return Err(ParseBaseIbanError::InvalidFormat);
-        }
-
-        // Now parse the remaining characters.
+        // Every character that is not in a position that is a multiple of 5
+        // + 1 should appear in the IBAN. We thus filter out every fifth
+        // character and check whether that constitutes a valid IBAN.
         BaseIban::try_form_string_from_electronic(
             bytes
                 .iter()
