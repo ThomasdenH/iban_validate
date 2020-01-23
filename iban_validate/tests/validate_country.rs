@@ -1,10 +1,10 @@
 //! This module contains tests for the BBAN format
 
-use iban::*;
+use iban::{BaseIban, Iban, ParseIbanError};
 
 #[test]
 /// This test checks whether ibans with a valid country format are recognized as such.
-fn test_valid_countries() {
+fn test_valid_countries() -> Result<(), ParseIbanError> {
     let valid_iban_countries = [
         "AD1200012030200359100100",
         "AE070331234567890123456",
@@ -85,13 +85,14 @@ fn test_valid_countries() {
     ];
 
     for &i in valid_iban_countries.into_iter() {
-        i.parse::<Iban>().expect("Could not parse IBAN");
+        i.parse::<Iban>()?;
     }
+    Ok(())
 }
 
 #[test]
 /// This test checks whether invalid country formats are recognized as such.
-fn test_invalid_country_format() {
+fn test_invalid_country_format() -> Result<(), ParseIbanError> {
     let valid_iban_counties = [
         "AD54BD012030200359100100",
         "AE32ABCD234567890123456",
@@ -107,21 +108,23 @@ fn test_invalid_country_format() {
     ];
 
     for &i in valid_iban_counties.into_iter() {
-        let base_iban = i.parse::<BaseIban>().unwrap();
+        let base_iban = i.parse::<BaseIban>()?;
         assert_eq!(
             i.parse::<Iban>(),
             Err(ParseIbanError::InvalidBban(base_iban))
         );
     }
+    Ok(())
 }
 
 #[test]
 /// This test checks whether an iban with an unknown country is recognized as such.
-fn test_unknown_country() {
+fn test_unknown_country() -> Result<(), ParseIbanError> {
     let iban_unknown_string = "ZZ07273912631298461";
-    let base_iban = iban_unknown_string.parse::<BaseIban>().unwrap();
+    let base_iban = iban_unknown_string.parse::<BaseIban>()?;
     assert_eq!(
         iban_unknown_string.parse::<Iban>(),
         Err(ParseIbanError::UnknownCountry(base_iban))
     );
+    Ok(())
 }
