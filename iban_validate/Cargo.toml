@@ -1,0 +1,52 @@
+[package]
+name = "iban_validate"
+# Note: When updating, also update in lib.rs and README.md
+version = "3.0.0"
+authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
+description = "A small crate to verify IBAN account numbers."
+repository = "https://github.com/ThomasdenH/iban_check"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["iban", "iban-validator"]
+categories = ["parsing"]
+edition = "2018"
+
+[badges]
+appveyor = { repository = "ThomasdenH/iban-validate" }
+travis-ci = { repository = "ThomasdenH/iban_validate" }
+coveralls = { repository = "ThomasdenH/iban_validate" }
+is-it-maintained-issue-resolution = { repository = "ThomasdenH/iban_validate" }
+is-it-maintained-open-issues = { repository = "ThomasdenH/iban_validate" }
+maintenance = { status = "passively-maintained" }
+
+[lib]
+name = "iban"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+# std is only used for the `Error` trait
+std = []
+# Builds rustdoc links, but requires nightly
+intra_rustdoc_links = []
+
+[dependencies.serde]
+version = "1"
+optional = true
+default-features = false
+features = ["derive"]
+
+[dependencies.arrayvec]
+version = "0.5.1"
+default-features = false
+features = ["array-sizes-33-128"]
+
+[dev-dependencies]
+proptest = "0.9"
+static_assertions = "1"
+serde_test = "1"
+criterion = "0.3"
+
+[[bench]]
+name = "iban_benchmark"
+harness = false

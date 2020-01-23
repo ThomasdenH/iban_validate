@@ -45,17 +45,17 @@ install:
 test_script:
   - rustc -vV
   - cargo -vV
-  - cargo build
-  - cargo test
-  - cargo doc
-  - cargo build --no-default-features
-  - cargo test --no-default-features
-  - cargo doc --no-default-features
-  - cargo build --no-default-features --features serde
-  - cargo test --no-default-features --features serde
-  - cargo doc --no-default-features --features serde
-  - cargo build --features serde
-  - cargo test --features serde
-  - cargo doc --features serde
+  - cargo build -p iban
+  - cargo test -p iban
+  - cargo doc -p iban
+  - cargo build --no-default-features -p iban
+  - cargo test --no-default-features -p iban
+  - cargo doc --no-default-features -p iban
+  - cargo build --no-default-features --features serde -p iban
+  - cargo test --no-default-features --features serde -p iban
+  - cargo doc --no-default-features --features serde -p iban
+  - cargo build --features serde -p iban
+  - cargo test --features serde -p iban
+  - cargo doc --features serde -p iban
 
 build: false
