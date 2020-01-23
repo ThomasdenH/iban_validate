@@ -1,12 +1,12 @@
 [package]
 name = "iban_validate"
 # Note: When updating, also update in lib.rs and README.md
-version = "3.0.0"
+version = "4.0.0"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
 license = "MIT OR Apache-2.0"
-readme = "README.md"
+readme = "../README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 edition = "2018"

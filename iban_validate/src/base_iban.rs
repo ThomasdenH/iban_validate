@@ -18,7 +18,7 @@ const MAX_IBAN_LEN: usize = 34;
 /// validation. This corresponds to the validation as described in ISO 13616-1.
 ///
 /// To be exact, the IBAN must start with two uppercase ASCII letters, followed
-/// by two digits, followed by any number of digits and uppercase ASCII
+/// by two digits, followed by any number of digits and ASCII
 /// letters. Additionally its checksum should be valid. It should either contain
 /// no whitespace, or be in the paper format, where characters are in
 /// space-separated groups of four.

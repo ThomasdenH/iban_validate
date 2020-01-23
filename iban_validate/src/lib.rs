@@ -26,7 +26,7 @@
 //! # Ok::<(), iban::ParseIbanError>(())
 //! ```
 //!
-//! # What does this library provide?
+//! ## What does this library provide?
 //! - A [`Iban`](crate::Iban) type that can be used to parse account numbers
 //!     very quickly. It doesn't require allocations at all, and instead
 //!     leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the
@@ -41,14 +41,21 @@
 //!     as proptest.
 //! - `#![forbid(unsafe_code)]`, making sure all code is written in safe Rust.
 //!
-//! # Features
+//! ## Usage
+//! The crate can be found on [crates.io](https://crates.io/crates/iban_validate). To use this crate, just add it as an
+//! dependency:
+//! ```toml
+//! [dependencies]
+//! iban_validate = "4"
+//! ```
+//! ## Features
 //! The following features can be used to configure the crate:
 //!
 //! - *std*: **Enabled by default.** Enable the standard library. It is only
 //!     used to provide implementations of [`Error`](std::error::Error).
 //! - *serde*: Enable `serde` support for [`Iban`](crate::Iban) and [`BaseIban`](crate::BaseIban).
 
-#![doc(html_root_url = "https://docs.rs/iban_validate/3.0.0")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/4.0.0")]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 #![deny(bare_trait_objects)]
