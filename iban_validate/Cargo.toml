@@ -10,6 +10,7 @@ readme = "../README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 edition = "2018"
+include = ["src/**/*"]
 
 [badges]
 appveyor = { repository = "ThomasdenH/iban-validate" }
