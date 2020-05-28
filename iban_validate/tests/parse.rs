@@ -38,7 +38,7 @@ fn test_checksum() {
         "TR330006100519786457465326",
     ];
 
-    for &i in invalid_checksums.into_iter() {
+    for &i in invalid_checksums.iter() {
         assert_eq!(
             i.parse::<Iban>(),
             Err(ParseIbanError::InvalidBaseIban {
@@ -60,7 +60,7 @@ fn test_valid_iban() {
         "TR330006100519786457841326",
     ];
 
-    for &i in valid_ibans.into_iter() {
+    for &i in valid_ibans.iter() {
         assert!(i.parse::<Iban>().is_ok());
     }
 }

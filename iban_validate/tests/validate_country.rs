@@ -84,7 +84,7 @@ fn test_valid_countries() -> Result<(), ParseIbanError> {
         "VA59001123000012345678",
     ];
 
-    for &i in valid_iban_countries.into_iter() {
+    for &i in valid_iban_countries.iter() {
         i.parse::<Iban>()?;
     }
     Ok(())
@@ -107,7 +107,7 @@ fn test_invalid_country_format() -> Result<(), ParseIbanError> {
         "BY56NBRB36009000002Z00AB00",
     ];
 
-    for &i in valid_iban_counties.into_iter() {
+    for &i in valid_iban_counties.iter() {
         let base_iban = i.parse::<BaseIban>()?;
         assert_eq!(
             i.parse::<Iban>(),
