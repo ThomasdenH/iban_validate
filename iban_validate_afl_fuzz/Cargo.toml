@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 iban_validate = { path = "../iban_validate" }
-afl = "0.4"
+afl = "0.10"
