@@ -43,7 +43,7 @@ default-features = false
 features = ["array-sizes-33-128"]
 
 [dev-dependencies]
-proptest = "0.10"
+proptest = "1.0"
 static_assertions = "1"
 serde_test = "1"
 criterion = "0.3"
