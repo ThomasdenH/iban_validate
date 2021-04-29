@@ -38,7 +38,7 @@ default-features = false
 features = ["derive"]
 
 [dependencies.arrayvec]
-version = "0.5.1"
+version = "0.7.0"
 default-features = false
 features = ["array-sizes-33-128"]
 
