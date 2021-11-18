@@ -62,7 +62,7 @@ pub struct BaseIban {
     /// The string representing the IBAN. The string contains only uppercase
     /// ASCII and digits and no whitespace. It starts with two letters followed
     /// by two digits.
-    s: ArrayString<[u8; MAX_IBAN_LEN]>,
+    s: ArrayString<MAX_IBAN_LEN>,
 }
 
 #[cfg(feature = "serde")]
@@ -190,7 +190,7 @@ impl BaseIban {
             .take(address.len())
             // Calculate the checksum
             .fold(0u16, |acc, &c| {
-                debug_assert!((c as char).to_digit(36).is_some(), "An address was supplied to compute_checksum with an invalid \
+                debug_assert!(char::from(c).is_digit(36), "An address was supplied to compute_checksum with an invalid \
                 character. Please file an issue at \
                 https://github.com/ThomasdenH/iban_validate.");
 
@@ -219,11 +219,11 @@ impl BaseIban {
     /// automatically invalid.
     fn try_form_string_from_electronic<T>(
         mut chars: T,
-    ) -> Result<ArrayString<[u8; MAX_IBAN_LEN]>, ParseBaseIbanError>
+    ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError>
     where
         T: Iterator<Item = u8>,
     {
-        let mut address_no_spaces = ArrayString::<[u8; MAX_IBAN_LEN]>::new();
+        let mut address_no_spaces = ArrayString::<MAX_IBAN_LEN>::new();
 
         // First expect exactly two uppercase letters and append them to the
         // string.
@@ -268,7 +268,7 @@ impl BaseIban {
     /// Parse a pretty print IBAN from a `str`.
     fn try_form_string_from_pretty_print(
         s: &str,
-    ) -> Result<ArrayString<[u8; MAX_IBAN_LEN]>, ParseBaseIbanError> {
+    ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError> {
         // The pretty print format consists of a number of groups of four
         // characters, separated by a space.
 
