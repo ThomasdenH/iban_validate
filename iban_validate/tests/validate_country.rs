@@ -108,7 +108,7 @@ fn test_invalid_country_format() -> Result<(), ParseIbanError> {
         "BY56NBRB36009000002Z00AB00",
     ];
 
-    for &i in valid_iban_counties.iter() {
+    for &i in &valid_iban_counties {
         let base_iban = i.parse::<BaseIban>()?;
         assert_eq!(
             i.parse::<Iban>(),

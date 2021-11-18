@@ -14,10 +14,10 @@ pub(super) enum CharacterType {
 
 impl CharacterType {
     fn matches(self, c: u8) -> bool {
+        use CharacterType::{A, C, N};
+        const MASK_CAPITAL: u8 = 0b0100_0000;
+        const MASK_DIGIT: u8 = 0b0010_0000;
         debug_assert!(c.is_ascii_uppercase() || c.is_ascii_digit());
-        use CharacterType::*;
-        const MASK_CAPITAL: u8 = 0b01000000;
-        const MASK_DIGIT: u8 = 0b00100000;
         match self {
             A => (c & MASK_DIGIT) == 0,
             N => (c & MASK_CAPITAL) == 0,

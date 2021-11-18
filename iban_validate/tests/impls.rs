@@ -67,7 +67,7 @@ assert_impl_all!(ParseIbanError: std::error::Error);
 
 #[cfg(feature = "serde")]
 mod impls_serde {
-    use super::*;
+    use super::{assert_impl_all, BaseIban, Iban};
     use serde::{Deserialize, Serialize};
     assert_impl_all!(BaseIban: Serialize, Deserialize<'static>);
     assert_impl_all!(Iban: Serialize, Deserialize<'static>);

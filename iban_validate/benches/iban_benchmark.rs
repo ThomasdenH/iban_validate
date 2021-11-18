@@ -20,7 +20,7 @@ pub fn display_benchmark(c: &mut Criterion) {
 pub fn display_with_spaces(c: &mut Criterion) {
     let iban = Iban::from_str(black_box("LV80 BANK 0000 4351 9500 1")).unwrap();
     c.bench_function("iban display #2", |b| {
-        b.iter(|| black_box(iban).to_string())
+        b.iter(|| black_box(iban).to_string());
     });
 }
 

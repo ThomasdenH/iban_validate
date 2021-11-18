@@ -189,14 +189,15 @@ impl BaseIban {
             .skip(4)
             .take(address.len())
             // Calculate the checksum
-            .fold(0u16, |acc, &c| {
+            .fold(0_u16, |acc, &c| {
+                const MASK_DIGIT: u8 = 0b0010_0000;
+
                 debug_assert!(char::from(c).is_digit(36), "An address was supplied to compute_checksum with an invalid \
                 character. Please file an issue at \
                 https://github.com/ThomasdenH/iban_validate.");
 
                 // We expect only '0'-'9' and 'A'-'Z', so we can use a mask for
                 // faster testing.
-                const MASK_DIGIT: u8 = 0b00100000;
                 (if c & MASK_DIGIT != 0 {
                     // '0' - '9'. We should multiply the accumulator by 10 and
                     // add this value.
