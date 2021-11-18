@@ -204,8 +204,10 @@ impl BaseIban {
                     (acc * 10) + u16::from(c - b'0')
                 } else {
                     // 'A' - 'Z'. We should multiply the accumulator by 100 and
-                    // add this value. We can multiply by (100 % 97) = 3
-                    // instead.
+                    // add this value.
+                    // Note: We can multiply by (100 % 97) = 3 instead. This
+                    // doesn't impact performance though, so or simplicity we
+                    // use 100.
                     (acc * 100) + u16::from(c - b'A' + 10)
                 }) % 97
             })
