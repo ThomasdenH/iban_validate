@@ -189,17 +189,24 @@ impl BaseIban {
             .skip(4)
             .take(address.len())
             // Calculate the checksum
-            .fold(0, |acc, c| {
-                // Convert '0'-'Z' to 0-35
-                let digit = (*c as char).to_digit(36).expect(
-                    "An address was supplied to compute_checksum with an invalid \
-                     character. Please file an issue at \
-                     https://github.com/ThomasdenH/iban_validate.",
-                );
-                // If the number consists of two digits, multiply by 100
-                let multiplier = if digit > 9 { 100 } else { 10 };
-                // Calculate modulo
-                (acc * multiplier + digit) % 97
+            .fold(0u16, |acc, &c| {
+                debug_assert!((c as char).to_digit(36).is_some(), "An address was supplied to compute_checksum with an invalid \
+                character. Please file an issue at \
+                https://github.com/ThomasdenH/iban_validate.");
+
+                // We expect only '0'-'9' and 'A'-'Z', so we can use a mask for
+                // faster testing.
+                const MASK_DIGIT: u8 = 0b00100000;
+                (if c & MASK_DIGIT != 0 {
+                    // '0' - '9'. We should multiply the accumulator by 10 and
+                    // add this value.
+                    (acc * 10) + u16::from(c - b'0')
+                } else {
+                    // 'A' - 'Z'. We should multiply the accumulator by 100 and
+                    // add this value. We can multiply by (100 % 97) = 3
+                    // instead.
+                    (acc * 100) + u16::from(c - b'A' + 10)
+                }) % 97
             })
             == 1 &&
             // Check digits with value 01 or 00 are invalid!
@@ -277,10 +284,13 @@ impl BaseIban {
 
         // We check that every fifth character is a space, knowing already that
         // account number ends with a character that appears in the IBAN.
-        for (_, byte_at_space_position) in bytes.iter().enumerate().filter(|(i, _c)| i % 5 == 4) {
-            if *byte_at_space_position != b' ' {
-                return Err(ParseBaseIbanError::InvalidFormat);
-            }
+        if bytes
+            .iter()
+            .enumerate()
+            .filter(|(i, _c)| i % 5 == 4)
+            .any(|(_, &byte_at_space_position)| byte_at_space_position != b' ')
+        {
+            return Err(ParseBaseIbanError::InvalidFormat);
         }
 
         // Every character that is not in a position that is a multiple of 5

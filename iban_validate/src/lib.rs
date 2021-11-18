@@ -526,6 +526,7 @@ impl TryFrom<BaseIban> for Iban {
             "LT" => Some([(5usize, N), (11, N)].borrow()),
             "LU" => Some([(3usize, N), (13, C)].borrow()),
             "LV" => Some([(4usize, A), (13, C)].borrow()),
+            "LY" => Some([(3usize, N), (3, N), (15, N)].borrow()),
             "MC" => Some([(5usize, N), (5, N), (11, C), (2, N)].borrow()),
             "MD" => Some([(2usize, C), (18, C)].borrow()),
             "ME" => Some([(3usize, N), (13, N), (2, N)].borrow()),
