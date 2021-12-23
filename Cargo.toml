@@ -2,5 +2,6 @@
 
 members = [
     "iban_validate",
-    "iban_validate_afl_fuzz"
+    "iban_validate_afl_fuzz",
+    "iban_validate_registry_generation"
 ]
