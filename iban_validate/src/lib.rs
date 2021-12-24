@@ -187,7 +187,8 @@ impl Iban {
         match self.country_code() {
             "AD" => Some(0..4),
             "AE" => Some(0..3),
-            "AL" => Some(0..3),
+            // The bank identifier length (8) does not match the range (0..3) in the registry. Using length as truth.
+            "AL" => Some(0..8),
             "AT" => Some(0..5),
             "AZ" => Some(0..4),
             "BA" => Some(0..3),
@@ -288,7 +289,9 @@ impl Iban {
         match self.country_code() {
             "AD" => Some(4..8),
             "AE" => None,
-            "AL" => Some(3..8),
+            // The registry branch example ("1100") does not have the length as expected from the position range (3..8).
+            // Assume the example is correct, see generation code for details.
+            "AL" => Some(3..7),
             "AT" => None,
             "AZ" => None,
             "BA" => Some(3..6),
@@ -324,6 +327,7 @@ impl Iban {
             "IQ" => Some(4..7),
             "IS" => Some(2..4),
             "IT" => Some(6..11),
+            // The registry doesn't provide an example.
             "JO" => Some(4..8),
             "KW" => None,
             "KZ" => None,
