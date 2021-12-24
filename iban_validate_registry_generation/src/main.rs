@@ -1,13 +1,4 @@
-//! This file can generate the repeticive country-specific code from the IBAN registry.
-//!
-//! The code could be better, but honestly, it's not worth it. The txt format is undocumented,
-//! seems to be ill-structured. (There is the following pattern: "_\n", which I suspect may be
-//! due to one item having an accidental newline and the formatter adding " to escape it.)
-//!
-//! Furthermore, the registry itself has errors. Albania for example, has a bank code position 1-3,
-//! implying a length of 3. Instead, the length is 8 and this is also the length of the example.
-//! Based on a [press release](https://www.bankofalbania.org/Press/Press_Releases/IBAN_International_Bank_Account_Number.html),
-//! the length is taken for truth.
+#![doc(include = "../README.md")]
 
 use std::{fmt::Write, fs::File, io::Read};
 
