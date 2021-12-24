@@ -70,14 +70,33 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
         })
         .collect();
     let bank_identifier_pattern = read_line(contents, 11);
-    for ((country_code, maybe_range), identifier_pattern) in country_codes
+    let bank_identifier_example = read_line(contents, 14);
+    let bban = read_line(contents, 16);
+    let iban = read_line(contents, 21);
+    for (
+        ((((country_code, maybe_range), identifier_pattern), bank_identifier_example), bban),
+        iban,
+    ) in country_codes
         .iter()
         .zip(bank_identifier_position.iter())
         .zip(bank_identifier_pattern.iter())
+        .zip(bank_identifier_example.iter())
+        .zip(bban.iter())
+        .zip(iban.iter())
     {
-        if let Some((start, mut end)) = maybe_range {
+        if let Some((mut start, mut end)) = maybe_range {
+            // The info for Jordan is just incorrect. Adjust manually.
+            if *country_code == "JO" {
+                writeln!(
+                    &mut s,
+                    "// Jordan has an incorrect bank identifier range in the registry."
+                )?;
+                start = 0;
+                end = 4;
+            }
+
             // Test for inconsistencies in the input file and leave a comment.
-            // Namely, decduce the pattern length and check if it matches the range.
+            // Namely, deduce the pattern length and check if it matches the range.
             if *identifier_pattern != "N/A" && !identifier_pattern.is_empty() {
                 let bank_identifier_length =
                     if let Ok((_, bank_identifier_length)) = parse_pattern(identifier_pattern) {
@@ -97,6 +116,23 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
                 if end - start != bank_identifier_length {
                     writeln!(&mut s, "// The bank identifier length ({}) does not match the range ({}..{}) in the registry. Using length as truth.", bank_identifier_length, start, end)?;
                     end = start + bank_identifier_length;
+                }
+
+                // As a final check, see if the example BBAN and and bank identifier match.
+                // Skip some countries since the examples don't match.
+                // For ST, weirdly the PDF BBAN does match the bank_identifier.
+                if matches!(*country_code, "MK" | "SE" | "ST") {
+                    assert_eq!(bank_identifier_example.len(), bank_identifier_length);
+                } else {
+                    let bank_identifier_example: String = bank_identifier_example
+                        .chars()
+                        .filter(|c| c.is_ascii_alphanumeric())
+                        .collect();
+                    // Sometimes the BBAN is just different so we should use the BBAN and not the IBAN. Sometimes the BBAN removes leading zeros or
+                    // has weird formatting. Just check both and be happy if one matches.
+                    assert!(bban[start..end] == bank_identifier_example
+                        || iban[start + 4..end + 4] == bank_identifier_example,
+                        "the example bank code does not match the example bban/iban for country {}. Expected {} or {} but found {}", country_code, &bban[start..end], &iban[start + 4..end + 4], &bank_identifier_example);
                 }
             }
             writeln!(&mut s, "\"{}\" => Some({}..{}),", country_code, start, end)?;
@@ -142,8 +178,11 @@ fn generate_branch_identifier_position_in_bban_match_arm(contents: &str) -> anyh
     // Load the examples
     let branch_identifier = read_line(contents, 15);
 
-
-    for ((country_code, maybe_range), branch_identifier) in country_codes.iter().zip(branch_identifier_position.iter()).zip(branch_identifier.iter()) {
+    for ((country_code, maybe_range), branch_identifier) in country_codes
+        .iter()
+        .zip(branch_identifier_position.iter())
+        .zip(branch_identifier.iter())
+    {
         if let Some((start, mut end)) = maybe_range {
             // Just do some sanity check. That actually fails sometimes...
 
@@ -153,6 +192,7 @@ fn generate_branch_identifier_position_in_bban_match_arm(contents: &str) -> anyh
                 // Note that the .PDF version of the registry is incorrect.
                 // The bank position should be 1-4 but is 5-8, the branch
                 // position should be 5-8 but is empty.
+                // The bank position is also incorrect in the .txt, the fix is hardcoded there.
                 writeln!(&mut s, "// The registry doesn't provide an example.")?;
             } else if branch_identifier.len() != end - start {
                 if branch_identifier.len() == (end - 1) - start {
@@ -234,7 +274,7 @@ fn generate_test_file(contents: &str) -> anyhow::Result<String> {
     let iban_electronic = read_line(contents, 21);
     let iban_print = read_line(contents, 22);
     for i in 0..country_codes.len() {
-        let bank = if bank[i].is_empty() {
+        let bank = if bank[i].is_empty() || bank[i] == "N/A" {
             "None".to_string()
         } else {
             // For Albania, the bank string contains extra '-'. This is not deducible from the IBAN.

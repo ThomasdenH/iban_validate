@@ -224,7 +224,8 @@ impl Iban {
             "IQ" => Some(0..4),
             "IS" => Some(0..2),
             "IT" => Some(1..6),
-            "JO" => Some(4..8),
+            // Jordan has an incorrect bank identifier range in the registry.
+            "JO" => Some(0..4),
             "KW" => Some(0..4),
             "KZ" => Some(0..3),
             "LB" => Some(0..4),
