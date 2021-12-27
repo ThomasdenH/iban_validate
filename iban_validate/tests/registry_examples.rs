@@ -664,6 +664,7 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
         });
 
         // For the countries that abide by the pretty print format, check if the parsed IBAN is identical.
+        // We could remove the whitespace and parse again, but that's probably not worth it.
         if !matches!(*country_code, "BI" | "LY" | "SV" | "VA") {
             let iban_2 = iban_print.parse::<Iban>().unwrap_or_else(|_| {
                 panic!("could not parse print format of country {}", country_code)

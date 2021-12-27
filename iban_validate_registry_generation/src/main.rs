@@ -1,14 +1,16 @@
-#![doc(include = "../README.md")]
+#![doc = include_str!("../README.md")]
 
 use std::{fmt::Write, fs::File, io::Read};
 
 use nom::{
     bytes::complete::{tag, take, take_while},
     character::complete::{alpha1, digit1},
+    combinator::map_res,
     multi::many1,
     sequence::{preceded, separated_pair, terminated},
     IResult,
 };
+use std::str::FromStr;
 
 fn main() -> anyhow::Result<()> {
     let mut registry = File::open("./iban_validate_registry_generation/swift_iban_registry.txt")?;
@@ -44,22 +46,7 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
     // - The identifier for Albania is a bit strange. I think 1-8 is the bank identifier position,
     //   but then part of that is the branch position. Solution: the length is taken instead of
     //   the range as denoted in the file. See: https://www.bankofalbania.org/Press/Press_Releases/IBAN_International_Bank_Account_Number.html
-    let bank_identifier_position: Vec<_> = contents
-        .lines()
-        .nth(10)
-        .unwrap()
-        .split('\t')
-        .skip(1)
-        .map(|s| {
-            let mut split = s.split('-');
-            if let Ok(start) = split.next().unwrap().parse::<usize>() {
-                let end: usize = split.next().unwrap().parse().unwrap();
-                Some((start - 1, end))
-            } else {
-                None
-            }
-        })
-        .collect();
+    let bank_identifier_position = read_line(contents, 10);
     let bank_identifier_pattern = read_line(contents, 11);
     let bank_identifier_example = read_line(contents, 14);
     let bban = read_line(contents, 16);
@@ -75,7 +62,12 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
         .zip(bban.iter())
         .zip(iban.iter())
     {
-        if let Some((mut start, mut end)) = maybe_range {
+        if maybe_range.is_empty() || *maybe_range == "N/A" {
+            writeln!(&mut s, "\"{}\" => None,", country_code)?;
+        } else if let Ok((_, (mut start, mut end))) = parse_range(maybe_range) {
+            // Convert from one-indexed inclusive-inclusive to zero-indexed inclusive-exclusive.
+            start -= 1;
+
             // The info for Jordan is just incorrect. Adjust manually.
             if *country_code == "JO" {
                 writeln!(
@@ -128,7 +120,10 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
             }
             writeln!(&mut s, "\"{}\" => Some({}..{}),", country_code, start, end)?;
         } else {
-            writeln!(&mut s, "\"{}\" => None,", country_code)?;
+            panic!(
+                "Malformed range for bank identifier for country {}",
+                country_code
+            );
         }
     }
     Ok(s)
@@ -144,6 +139,14 @@ fn read_line(contents: &str, index: usize) -> Vec<&str> {
         .split('\t')
         .skip(1)
         .collect()
+}
+
+fn parse_range(input: &str) -> IResult<&str, (usize, usize)> {
+    separated_pair(
+        map_res(digit1, usize::from_str),
+        tag("-"),
+        map_res(digit1, usize::from_str),
+    )(input)
 }
 
 fn generate_branch_identifier_position_in_bban_match_arm(contents: &str) -> anyhow::Result<String> {
@@ -241,7 +244,7 @@ fn generate_format_match_arm(contents: &str) -> anyhow::Result<String> {
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
     for (country_code, pos) in country_codes.iter().zip(bank_identifier_position.iter()) {
-        // TODO: Maybe combine sequences of the same character
+        // TODO: Maybe combine sequences of the same character. The compiler will probably optimize this away though.
         let pos_formatted = pos
             .iter()
             .map(|(num, t): &(&str, &str)| format!("({}, {})", num, t.to_ascii_uppercase()))
