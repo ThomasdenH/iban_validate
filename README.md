@@ -55,17 +55,13 @@ The following features can be used to configure the crate:
 - _std_: **Enabled by default.** Enable the standard library. It is only used to provide implementations of [`Error`](https://doc.rust-lang.org/stable/std/error/trait.Error.html).
 - _serde_: Enable `serde` support for [`Iban`] and [`BaseIban`].
 
-## Documentation
-
-The full documentation is available at [docs.rs](https://docs.rs/iban_validate/).
-
 ## Contributing
 
-If you experience issues with this crate or want to help, please look [here](contributing.md).
+If you experience issues with this crate or want to help, please look [here](https://github.com/ThomasdenH/iban_validate/blob/master/contributing.md).
 
 ## Stability
 
-This crate has the goal of being usable on the latest stable version of Rust. Its minimum version is documented and tested against, although no extra effort is taken to support earlier versions. The minimum version of Rust can be increased, although this corresponds to a new major release. The crate does not use unsafe itself, although dependencies might. Breaking changes are not avoided in new major versions, although these will always be well-documented and the process of upgrading made clear.
+This crate is usable on the latest stable release of the Rust compiler and otherwise makes no stability guarantees.
 
 ## License
 
