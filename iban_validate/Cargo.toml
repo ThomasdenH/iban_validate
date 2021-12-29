@@ -13,11 +13,6 @@ edition = "2018"
 include = ["src/**/*"]
 
 [badges]
-appveyor = { repository = "ThomasdenH/iban-validate" }
-travis-ci = { repository = "ThomasdenH/iban_validate" }
-coveralls = { repository = "ThomasdenH/iban_validate" }
-is-it-maintained-issue-resolution = { repository = "ThomasdenH/iban_validate" }
-is-it-maintained-open-issues = { repository = "ThomasdenH/iban_validate" }
 maintenance = { status = "passively-maintained" }
 
 [lib]
