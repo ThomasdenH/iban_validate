@@ -1,6 +1,6 @@
 on: push
 
-name: Continuous integration
+name: Continuous integration (iban_validate)
 
 jobs:
   ci:
@@ -11,6 +11,15 @@ jobs:
           - stable
           - beta
           - nightly
+        features:
+          - ""
+          - --no-default-features
+          - "--no-default-features --features serde"
+          - "--features serde"
+        command:
+          - build
+          - test
+          - doc
 
     steps:
       - uses: actions/checkout@v2
@@ -25,71 +34,5 @@ jobs:
       # Default features
       - uses: actions-rs/cargo@v1
         with:
-          command: build --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc --manifest-path iban_validate/Cargo.toml
-
-      # No features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build --no-default-features --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test --no-default-features --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc --no-default-features --manifest-path iban_validate/Cargo.toml
-
-      # Serde
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build --no-default-features --features serde --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test --no-default-features --features serde --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc --no-default-features --features serde --manifest-path iban_validate/Cargo.toml
-
-      # All features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build --features serde --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test --features serde --manifest-path iban_validate/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc --features serde --manifest-path iban_validate/Cargo.toml
-
-      # Generation code
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build --manifest-path iban_validate_registry_generation/Cargo.toml
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test --manifest-path iban_validate_registry_generation/Cargo.toml
-
-      # Clippy & Fmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+          command: ${{ matrix.command }}
+          args: ${{ matrix.features }} --manifest-path iban_validate/Cargo.toml
