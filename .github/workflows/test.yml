@@ -1,0 +1,38 @@
+on: push
+
+name: Continuous integration (iban_validate)
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+        features:
+          - ""
+          - --no-default-features
+          - "--no-default-features --features serde"
+          - "--features serde"
+        command:
+          - build
+          - test
+          - doc
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt, clippy
+
+      # Default features
+      - uses: actions-rs/cargo@v1
+        with:
+          command: ${{ matrix.command }}
+          args: ${{ matrix.features }} --manifest-path iban_validate/Cargo.toml

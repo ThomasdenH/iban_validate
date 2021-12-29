@@ -1,61 +1,5 @@
-//! This crate provides an easy way to validate an IBAN (International Bank Account Number). To do
-//! so, you can use the function [`parse()`](str::parse). This will check the IBAN rules
-//! as well as the BBAN structure. The provided [`Iban`](crate::Iban) structure provides many methods
-//! to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](crate::IbanLike)
-//! trait.
-//!
-//! When BBAN parsing fails, the error type [`ParseIbanError`](crate::ParseIbanError) provides useful
-//! information about what went wrong. Additionally, the error contains [`BaseIban`](crate::BaseIban),
-//! which can still be used to access useful information.
-//!
-//! # Example
-//! The following example does a full validation of the IBAN and BBAN format.
-//!
-//! ```rust
-//! use iban::*;
-//!
-//! let account = "DE44500105175407324931".parse::<Iban>()?;
-//!
-//! assert_eq!(account.country_code(), "DE");
-//! assert_eq!(account.check_digits(), 44);
-//! assert_eq!(account.bban(), "500105175407324931");
-//! assert_eq!(account.electronic_str(), "DE44500105175407324931");
-//! assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
-//! assert_eq!(account.bank_identifier(), Some("50010517"));
-//! assert_eq!(account.branch_identifier(), None);
-//! # Ok::<(), iban::ParseIbanError>(())
-//! ```
-//!
-//! ## What does this library provide?
-//! - A [`Iban`](crate::Iban) type that can be used to parse account numbers
-//!     very quickly. It doesn't require allocations at all, and instead
-//!     leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the
-//!     hood.
-//! - A flexible API that is useful even when the country is not in the Swift
-//!     registry (using [`BaseIban`](crate::BaseIban)). Instead of using panic,
-//!     the crate provides typed errors with what went wrong.
-//! - All functionality can be used in a `no_std` environment (except for the
-//!     implementation of `std` traits).
-//! - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
-//! - CI tested results via the Swift provided and custom test cases, as well
-//!     as proptest.
-//! - `#![forbid(unsafe_code)]`, making sure all code is written in safe Rust.
-//!
-//! ## Usage
-//! The crate can be found on [crates.io](https://crates.io/crates/iban_validate). To use this crate, just add it as an
-//! dependency:
-//! ```toml
-//! [dependencies]
-//! iban_validate = "4"
-//! ```
-//! ## Features
-//! The following features can be used to configure the crate:
-//!
-//! - *std*: **Enabled by default.** Enable the standard library. It is only
-//!     used to provide implementations of [`Error`](std::error::Error).
-//! - *serde*: Enable `serde` support for [`Iban`](crate::Iban) and [`BaseIban`](crate::BaseIban).
-
-#![doc(html_root_url = "https://docs.rs/iban_validate/4.0.0")]
+#![doc = include_str!("../../README.md")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/4.0.1")]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 #![deny(bare_trait_objects)]
@@ -187,13 +131,15 @@ impl Iban {
         match self.country_code() {
             "AD" => Some(0..4),
             "AE" => Some(0..3),
-            "AL" => Some(0..3),
+            // The bank identifier length (8) does not match the range (0..3) in the registry. Using length as truth.
+            "AL" => Some(0..8),
             "AT" => Some(0..5),
             "AZ" => Some(0..4),
             "BA" => Some(0..3),
             "BE" => Some(0..3),
             "BG" => Some(0..4),
             "BH" => Some(0..4),
+            "BI" => Some(0..5),
             "BR" => Some(0..8),
             "BY" => Some(0..4),
             "CH" => Some(0..5),
@@ -202,9 +148,9 @@ impl Iban {
             "CZ" => Some(0..4),
             "DE" => Some(0..8),
             "DK" => Some(0..4),
-            "DO" => Some(0..3),
+            "DO" => Some(0..4),
             "EE" => Some(0..2),
-            "EG" => Some(0..3),
+            "EG" => Some(0..4),
             "ES" => Some(0..4),
             "FI" => Some(0..3),
             "FO" => Some(0..4),
@@ -222,7 +168,8 @@ impl Iban {
             "IQ" => Some(0..4),
             "IS" => Some(0..2),
             "IT" => Some(1..6),
-            "JO" => Some(4..8),
+            // Jordan has an incorrect bank identifier range in the registry.
+            "JO" => Some(0..4),
             "KW" => Some(0..4),
             "KZ" => Some(0..3),
             "LB" => Some(0..4),
@@ -231,6 +178,7 @@ impl Iban {
             "LT" => Some(0..5),
             "LU" => Some(0..3),
             "LV" => Some(0..4),
+            "LY" => Some(0..3),
             "MC" => Some(0..5),
             "MD" => Some(0..2),
             "ME" => Some(0..3),
@@ -249,6 +197,7 @@ impl Iban {
             "RS" => Some(0..3),
             "SA" => Some(0..2),
             "SC" => Some(0..6),
+            "SD" => Some(0..2),
             "SE" => Some(0..3),
             "SI" => Some(0..5),
             "SK" => Some(0..4),
@@ -285,45 +234,86 @@ impl Iban {
         match self.country_code() {
             "AD" => Some(4..8),
             "AE" => None,
+            // The registry branch example ("1100") does not have the length as expected from the position range (3..8).
+            // Assume the example is correct, see generation code for details.
             "AL" => Some(3..7),
-            "AT" | "AZ" => None,
+            "AT" => None,
+            "AZ" => None,
             "BA" => Some(3..6),
             "BE" => None,
             "BG" => Some(4..8),
             "BH" => None,
+            "BI" => Some(5..10),
             "BR" => Some(8..13),
-            "BY" | "CH" | "CR" => None,
+            "BY" => None,
+            "CH" => None,
+            "CR" => None,
             "CY" => Some(3..8),
-            "CZ" | "DE" | "DK" | "DO" | "EE" => None,
-            "EG" => Some(3..6),
+            "CZ" => None,
+            "DE" => None,
+            "DK" => None,
+            "DO" => None,
+            "EE" => None,
+            "EG" => Some(4..8),
             "ES" => Some(4..8),
-            "FI" | "FO" | "FR" => None,
+            "FI" => None,
+            "FO" => None,
+            "FR" => None,
             "GB" => Some(4..10),
-            "GE" | "GI" | "GL" => None,
-            "GR" => Some(4..7),
-            "GT" | "HR" => None,
+            "GE" => None,
+            "GI" => None,
+            "GL" => None,
+            "GR" => Some(3..7),
+            "GT" => None,
+            "HR" => None,
             "HU" => Some(3..7),
             "IE" => Some(4..10),
             "IL" => Some(3..6),
             "IQ" => Some(4..7),
             "IS" => Some(2..4),
             "IT" => Some(6..11),
-            "JO" | "KW" | "KZ" | "LB" | "LC" | "LI" | "LT" | "LU" | "LV" => None,
+            // The registry doesn't provide an example.
+            "JO" => Some(4..8),
+            "KW" => None,
+            "KZ" => None,
+            "LB" => None,
+            "LC" => None,
+            "LI" => None,
+            "LT" => None,
+            "LU" => None,
+            "LV" => None,
+            "LY" => Some(3..6),
             "MC" => Some(5..10),
-            "MD" | "ME" | "MK" => None,
+            "MD" => None,
+            "ME" => None,
+            "MK" => None,
             "MR" => Some(5..10),
             "MT" => Some(4..9),
             "MU" => Some(6..8),
-            "NL" | "NO" | "PK" => None,
+            "NL" => None,
+            "NO" => None,
+            "PK" => None,
             "PL" => Some(0..8),
-            "PS" | "PT" | "QA" | "RO" | "RS" | "SA" => None,
+            "PS" => None,
+            "PT" => None,
+            "QA" => None,
+            "RO" => None,
+            "RS" => None,
+            "SA" => None,
             "SC" => Some(6..8),
-            "SE" | "SI" | "SK" => None,
+            "SD" => None,
+            "SE" => None,
+            "SI" => None,
+            "SK" => None,
             "SM" => Some(6..11),
             "ST" => Some(4..8),
-            "SV" | "TL" => None,
+            "SV" => None,
+            "TL" => None,
             "TN" => Some(2..5),
-            "TR" | "UA" | "VA" | "VG" => None,
+            "TR" => None,
+            "UA" => None,
+            "VA" => None,
+            "VG" => None,
             "XK" => Some(2..4),
             _ => panic!(
                 "Unknown country! Please file an issue at \
@@ -495,6 +485,7 @@ impl TryFrom<BaseIban> for Iban {
             "BE" => Some([(3, N), (7, N), (2, N)].borrow()),
             "BG" => Some([(4, A), (4, N), (2, N), (8, C)].borrow()),
             "BH" => Some([(4, A), (14, C)].borrow()),
+            "BI" => Some([(5, N), (5, N), (11, N), (2, N)].borrow()),
             "BR" => Some([(8, N), (5, N), (10, N), (1, A), (1, C)].borrow()),
             "BY" => Some([(4, C), (4, N), (16, C)].borrow()),
             "CH" => Some([(5, N), (12, C)].borrow()),
@@ -551,6 +542,7 @@ impl TryFrom<BaseIban> for Iban {
             "RS" => Some([(3, N), (13, N), (2, N)].borrow()),
             "SA" => Some([(2, N), (18, C)].borrow()),
             "SC" => Some([(4, A), (2, N), (2, N), (16, N), (3, A)].borrow()),
+            "SD" => Some([(2, N), (12, N)].borrow()),
             "SE" => Some([(3, N), (16, N), (1, N)].borrow()),
             "SI" => Some([(5, N), (8, N), (2, N)].borrow()),
             "SK" => Some([(4, N), (6, N), (10, N)].borrow()),
