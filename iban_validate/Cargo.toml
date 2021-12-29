@@ -10,7 +10,7 @@ readme = "../README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 edition = "2018"
-include = ["src/**/*"]
+include = ["src/**/*", "README.md"]
 
 [badges]
 maintenance = { status = "passively-maintained" }
