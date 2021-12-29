@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 nom = "7"
+csv = "1.1"

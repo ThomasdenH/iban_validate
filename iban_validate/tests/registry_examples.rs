@@ -1,6 +1,17 @@
 //! Use the registry examples to validate the code. As you can see, there are a lot of errors/exceptions, unfortunately.
 
+use std::convert::TryFrom;
+
 use iban::{Iban, IbanLike, ParseIbanError};
+
+struct RegistryExample<'a> {
+    country_code: &'a str,
+    bank_identifier: Option<&'a str>,
+    branch_identifier: Option<&'a str>,
+    bban: &'a str,
+    iban_electronic: &'a str,
+    iban_print: &'a str
+}
 
 #[test]
 fn test_registry_examples() -> Result<(), ParseIbanError> {
@@ -736,4 +747,19 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
         }
     }
     Ok(())
+}
+
+#[test]
+fn find_correct_checksum() {
+    for a in b'0'..=b'9' {
+        for b in b'0'..=b'9' {
+            let mut iban = b"ST32000200010192194210112".to_vec();
+            iban[2] = a;
+            iban[3] = b;
+            let iban = std::str::from_utf8(&iban).unwrap();
+            if let Ok(iban) = Iban::try_from(iban) {
+                panic!("Correct: {}{}", a - b'0', b - b'0');
+            }
+        }
+    }
 }

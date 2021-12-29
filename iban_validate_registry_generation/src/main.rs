@@ -1,75 +1,126 @@
 #![doc = include_str!("../README.md")]
 
-use std::{fmt::Write, fs::File, io::Read};
+use std::{
+    borrow::Borrow,
+    fmt::Write,
+    fs::File,
+    io::Read,
+    ops::{Deref, DerefMut},
+};
+
+use csv::{Reader, ReaderBuilder, StringRecord, Trim};
 
 use nom::{
+    branch::{self, alt},
     bytes::complete::{tag, take, take_while},
-    character::complete::{alpha1, digit1},
-    combinator::map_res,
+    character::complete::{alpha1, anychar, digit1, not_line_ending},
+    combinator::{all_consuming, eof, map, map_res},
     multi::many1,
     sequence::{preceded, separated_pair, terminated},
     IResult,
 };
 use std::str::FromStr;
 
+struct RegistryRecord<'a> {
+    country_code: &'a str,
+    bban: &'a str,
+    iban_electronic: &'a str,
+    iban_print: &'a str,
+    bank_identifier_position: Option<(usize, usize)>,
+    bank_identifier_pattern: Option<Vec<&'a str>>,
+    bank_identifier_example: Option<&'a str>,
+    branch_identifier_position: Option<(usize, usize)>,
+    branch_identifier_pattern: Option<Vec<&'a str>>,
+    branch_identifier_example: Option<&'a str>,
+    iban_structure: Vec<(&'a str, &'a str)>,
+}
+
+struct RegistryReader<'a> {
+    records: Vec<RegistryRecord<'a>>,
+}
+
+impl<'a> RegistryReader<'a> {
+    fn new(records_transposed: &'a Vec<StringRecord>) -> anyhow::Result<Self> {
+        let records: Vec<RegistryRecord<'a>> = (1..records_transposed.len())
+            .map(|i| -> anyhow::Result<_> {
+                Ok(RegistryRecord {
+                    country_code: &records_transposed[2][i],
+                    bban: &records_transposed[16][i],
+                    iban_electronic: &records_transposed[21][i],
+                    iban_print: &records_transposed[22][i],
+                    bank_identifier_position: maybe(parse_range)(&records_transposed[10][i])
+                        .unwrap()
+                        .1,
+                    bank_identifier_pattern: maybe(potentially_malformed_pattern)(
+                        &records_transposed[11][i],
+                    )
+                    .unwrap()
+                    .1,
+                    bank_identifier_example: maybe(not_line_ending)(&records_transposed[14][i])
+                        .unwrap()
+                        .1,
+                    branch_identifier_position: maybe(parse_range)(&records_transposed[12][i])
+                        .unwrap()
+                        .1,
+                    branch_identifier_pattern: maybe(potentially_malformed_pattern)(
+                        &records_transposed[12][i],
+                    )
+                    .unwrap()
+                    .1,
+                    branch_identifier_example: maybe(not_line_ending)(&records_transposed[15][i])
+                        .unwrap()
+                        .1,
+                    iban_structure: iban_structure(&records_transposed[18][i]).unwrap().1,
+                })
+            })
+            .collect::<Result<_, _>>()
+            .unwrap();
+        Ok(RegistryReader { records })
+    }
+}
+
 fn main() -> anyhow::Result<()> {
-    let mut registry = File::open("./iban_validate_registry_generation/swift_iban_registry.txt")?;
-    let mut contents = String::new();
-    registry.read_to_string(&mut contents)?;
+    let mut reader = ReaderBuilder::new()
+        .delimiter(b'\t')
+        .double_quote(true)
+        .has_headers(false)
+        .trim(Trim::All)
+        .from_path("./swift_iban_registry.txt")?;
+
+    let records_transposed: Vec<StringRecord> = reader.records().collect::<Result<_, _>>()?;
+    let registry = RegistryReader::new(&records_transposed)?;
 
     println!(
         "BANK_IDENTIFIER:\n{}",
-        generate_bank_identifier_position_in_bban_match_arm(&contents)?
+        generate_bank_identifier_position_in_bban_match_arm(&registry)?
     );
 
     println!(
         "BRANCH_IDENTIFIER:\n{}",
-        generate_branch_identifier_position_in_bban_match_arm(&contents)?
+        generate_branch_identifier_position_in_bban_match_arm(&registry)?
     );
 
     println!(
         "FORMAT_VALIDATION:\n{}",
-        generate_format_match_arm(&contents)?
+        generate_format_match_arm(&registry)?
     );
 
-    println!("TEST_FILE:\n{}", generate_test_file(&contents)?);
+    println!("TEST_FILE:\n{}", generate_test_file(&registry)?);
 
     Ok(())
 }
 
-fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow::Result<String> {
+fn generate_bank_identifier_position_in_bban_match_arm(
+    contents: &RegistryReader,
+) -> anyhow::Result<String> {
     let mut s = String::new();
-    let country_codes = read_line(contents, COUNTRY_CODE_INDEX);
-    // - The bank identifier has an error in the input file: one range is terminated by an \n and
-    //   surrounded by ". I believe this is an error (an accidental newline that is escaped by the
-    //   generator of the file. Current solution: just fix the input file.
-    // - The identifier for Albania is a bit strange. I think 1-8 is the bank identifier position,
-    //   but then part of that is the branch position. Solution: the length is taken instead of
-    //   the range as denoted in the file. See: https://www.bankofalbania.org/Press/Press_Releases/IBAN_International_Bank_Account_Number.html
-    let bank_identifier_position = read_line(contents, 10);
-    let bank_identifier_pattern = read_line(contents, 11);
-    let bank_identifier_example = read_line(contents, 14);
-    let bban = read_line(contents, 16);
-    let iban = read_line(contents, 21);
-    for (
-        ((((country_code, maybe_range), identifier_pattern), bank_identifier_example), bban),
-        iban,
-    ) in country_codes
-        .iter()
-        .zip(bank_identifier_position.iter())
-        .zip(bank_identifier_pattern.iter())
-        .zip(bank_identifier_example.iter())
-        .zip(bban.iter())
-        .zip(iban.iter())
-    {
-        if maybe_range.is_empty() || *maybe_range == "N/A" {
-            writeln!(&mut s, "\"{}\" => None,", country_code)?;
-        } else if let Ok((_, (mut start, mut end))) = parse_range(maybe_range) {
+    for record in &contents.records {
+        if let Some((mut start, mut end)) = record.bank_identifier_position {
             // Convert from one-indexed inclusive-inclusive to zero-indexed inclusive-exclusive.
             start -= 1;
 
             // The info for Jordan is just incorrect. Adjust manually.
-            if *country_code == "JO" {
+            if record.country_code == "JO" {
                 writeln!(
                     &mut s,
                     "// Jordan has an incorrect bank identifier range in the registry."
@@ -80,21 +131,11 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
 
             // Test for inconsistencies in the input file and leave a comment.
             // Namely, deduce the pattern length and check if it matches the range.
-            if *identifier_pattern != "N/A" && !identifier_pattern.is_empty() {
-                let bank_identifier_length =
-                    if let Ok((_, bank_identifier_length)) = parse_pattern(identifier_pattern) {
-                        bank_identifier_length
-                            .into_iter()
-                            .map(|(len, _type)| len.parse::<usize>().unwrap())
-                            .sum()
-                    } else {
-                        parse_malformed_pattern(identifier_pattern)
-                            .unwrap()
-                            .1
-                            .into_iter()
-                            .map(|len| len.parse::<usize>().unwrap())
-                            .sum()
-                    };
+            if let Some(bank_identifier_pattern) = &record.bank_identifier_pattern {
+                let bank_identifier_length = bank_identifier_pattern
+                    .into_iter()
+                    .map(|len| len.parse::<usize>().unwrap())
+                    .sum();
 
                 if end - start != bank_identifier_length {
                     writeln!(&mut s, "// The bank identifier length ({}) does not match the range ({}..{}) in the registry. Using length as truth.", bank_identifier_length, start, end)?;
@@ -103,42 +144,46 @@ fn generate_bank_identifier_position_in_bban_match_arm(contents: &str) -> anyhow
 
                 // As a final check, see if the example BBAN and and bank identifier match.
                 // Skip some countries since the examples don't match.
-                // For ST, weirdly the PDF BBAN does match the bank_identifier.
-                if matches!(*country_code, "MK" | "SE" | "ST") {
+                // For ST, weirdly the PDF BBAN does match the bank_identifier, but the txt doesn't.
+                let bank_identifier_example: String = record
+                    .bank_identifier_example
+                    .as_deref()
+                    .expect(&format!(
+                        "expected a bank identifier example for country {}",
+                        record.country_code
+                    ))
+                    .chars()
+                    // Remove formatting like spaces and dashes
+                    .filter(|c| c.is_ascii_alphanumeric())
+                    .collect();
+                if matches!(record.country_code.deref(), "MK" | "SE" | "ST") {
                     assert_eq!(bank_identifier_example.len(), bank_identifier_length);
                 } else {
-                    let bank_identifier_example: String = bank_identifier_example
-                        .chars()
-                        .filter(|c| c.is_ascii_alphanumeric())
-                        .collect();
                     // Sometimes the BBAN is just different so we should use the BBAN and not the IBAN. Sometimes the BBAN removes leading zeros or
                     // has weird formatting. Just check both and be happy if one matches.
-                    assert!(bban[start..end] == bank_identifier_example
-                        || iban[start + 4..end + 4] == bank_identifier_example,
-                        "the example bank code does not match the example bban/iban for country {}. Expected {} or {} but found {}", country_code, &bban[start..end], &iban[start + 4..end + 4], &bank_identifier_example);
+                    assert!(record.bban[start..end] == bank_identifier_example
+                        || record.iban_electronic[start + 4..end + 4] == bank_identifier_example,
+                        "the example bank code does not match the example bban/iban for country {}. Expected {} or {} but found {}", record.country_code, &record.bban[start..end], &record.iban_electronic[start + 4..end + 4], &bank_identifier_example);
                 }
             }
-            writeln!(&mut s, "\"{}\" => Some({}..{}),", country_code, start, end)?;
+            writeln!(
+                &mut s,
+                "\"{}\" => Some({}..{}),",
+                record.country_code, start, end
+            )?;
         } else {
-            panic!(
-                "Malformed range for bank identifier for country {}",
-                country_code
-            );
+            // No range given.
+            writeln!(&mut s, "\"{}\" => None,", record.country_code)?;
         }
     }
     Ok(s)
 }
 
-const COUNTRY_CODE_INDEX: usize = 2;
-
-fn read_line(contents: &str, index: usize) -> Vec<&str> {
-    contents
-        .lines()
-        .nth(index)
-        .unwrap()
-        .split('\t')
-        .skip(1)
-        .collect()
+/// Parse using the inner function but accept an empty string or "N/A" as `None`.
+fn maybe<'a, T>(
+    f: impl FnMut(&'a str) -> IResult<&'a str, T>,
+) -> impl FnMut(&'a str) -> IResult<&'a str, Option<T>> {
+    alt((map(alt((eof, tag("N/A"))), |_| None), map(f, Some)))
 }
 
 fn parse_range(input: &str) -> IResult<&str, (usize, usize)> {
@@ -149,58 +194,52 @@ fn parse_range(input: &str) -> IResult<&str, (usize, usize)> {
     )(input)
 }
 
-fn generate_branch_identifier_position_in_bban_match_arm(contents: &str) -> anyhow::Result<String> {
+#[test]
+fn test_maybe_parse_range() {
+    let mut maybe_parse_range = maybe(parse_range);
+    assert_eq!(maybe_parse_range(""), Ok(("", None)));
+    assert_eq!(maybe_parse_range("N/A"), Ok(("", None)));
+    assert_eq!(maybe_parse_range("1-4"), Ok(("", Some((1, 4)))));
+}
+
+fn generate_branch_identifier_position_in_bban_match_arm(
+    contents: &RegistryReader,
+) -> anyhow::Result<String> {
     let mut s = String::new();
-    let country_codes = read_line(contents, COUNTRY_CODE_INDEX);
-    let branch_identifier_position: Vec<_> = contents
-        .lines()
-        .nth(12)
-        .unwrap()
-        .split('\t')
-        .skip(1)
-        .map(|s| {
-            let mut split = s.split('-');
-            if let Ok(start) = split.next().unwrap().parse::<usize>() {
-                let end: usize = split.next().unwrap().parse().unwrap();
-                Some((start - 1, end))
-            } else {
-                None
-            }
-        })
-        .collect();
+    for record in &contents.records {
+        if let Some((mut start, mut end)) = record.branch_identifier_position {
+            // Convert from one-indexed inclusive-inclusive to zero-indexed inclusive-exclusive.
+            start -= 1;
 
-    // Load the examples
-    let branch_identifier = read_line(contents, 15);
-
-    for ((country_code, maybe_range), branch_identifier) in country_codes
-        .iter()
-        .zip(branch_identifier_position.iter())
-        .zip(branch_identifier.iter())
-    {
-        if let Some((start, mut end)) = maybe_range {
             // Just do some sanity check. That actually fails sometimes...
 
-            if branch_identifier.is_empty() {
+            if let Some(branch_identifier_example) = record.branch_identifier_example {
+                if branch_identifier_example.len() != end - start {
+                    if branch_identifier_example.len() == (end - 1) - start {
+                        // Assume that the end of the range is accidentally exclusive, unlike the other entries.
+                        writeln!(&mut s, "// The registry branch example (\"{}\") does not have the length as expected from the position range ({}..{}).\n// Assume the example is correct, see generation code for details.", branch_identifier_example, start, end)?;
+                        end -= 1;
+                    } else {
+                        panic!("The registry branch example (\"{}\") does not have the length as expected from the position range ({}..{}) and it can't be fixed.", branch_identifier_example, start, end);
+                    }
+                }
+            } else {
                 // This happens for Jordan. The correct thing to do seems to be
                 // to assume that there just isn't an example.
                 // Note that the .PDF version of the registry is incorrect.
                 // The bank position should be 1-4 but is 5-8, the branch
                 // position should be 5-8 but is empty.
-                // The bank position is also incorrect in the .txt, the fix is hardcoded there.
+                // The bank position is also incorrect in the .txt, the fix is
+                // hardcoded in the bank identifier function.
                 writeln!(&mut s, "// The registry doesn't provide an example.")?;
-            } else if branch_identifier.len() != end - start {
-                if branch_identifier.len() == (end - 1) - start {
-                    // Assume that the end of the range is accidentally exclusive, unlike the other entries.
-                    writeln!(&mut s, "// The registry branch example (\"{}\") does not have the length as expected from the position range ({}..{}).\n// Assume the example is correct, see generation code for details.", branch_identifier, start, end)?;
-                    end -= 1;
-                } else {
-                    panic!("The registry branch example (\"{}\") does not have the length as expected from the position range ({}..{}) and it can't be fixed.", branch_identifier, start, end);
-                }
             }
-
-            writeln!(&mut s, "\"{}\" => Some({}..{}),", country_code, start, end)?;
+            writeln!(
+                &mut s,
+                "\"{}\" => Some({}..{}),",
+                record.country_code, start, end
+            )?;
         } else {
-            writeln!(&mut s, "\"{}\" => None,", country_code)?;
+            writeln!(&mut s, "\"{}\" => None,", record.country_code)?;
         }
     }
     Ok(s)
@@ -218,77 +257,66 @@ fn parse_malformed_pattern(contents: &str) -> IResult<&str, Vec<&str>> {
     ))(contents)
 }
 
-fn generate_format_match_arm(contents: &str) -> anyhow::Result<String> {
+fn potentially_malformed_pattern(contents: &str) -> IResult<&str, Vec<&str>> {
+    alt((
+        map(parse_pattern, |a: Vec<(&str, &str)>| {
+            a.iter().map(|a| a.0).collect()
+        }),
+        parse_malformed_pattern,
+    ))(contents)
+}
+
+fn iban_structure(contents: &str) -> IResult<&str, Vec<(&str, &str)>> {
+    preceded(
+        // Skip country code and check digits
+        take(5_usize),
+        parse_pattern,
+    )(contents)
+}
+
+fn generate_format_match_arm(contents: &RegistryReader) -> anyhow::Result<String> {
     let mut s = String::new();
-    let country_codes = read_line(contents, COUNTRY_CODE_INDEX);
-    let bank_identifier_position: Vec<_> = contents
-        .lines()
-        .nth(18)
-        .unwrap()
-        .split('\t')
-        .skip(1)
-        .map(|s| -> IResult<&str, Vec<(&str, &str)>> {
-            // Parse string.
-            preceded(
-                // Skip country code and check digits
-                take(5_usize),
-                parse_pattern,
-            )(s)
-        })
-        .map(|res| {
-            res.map(|(s, pars)| {
-                assert_eq!(s, "");
-                pars
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap();
-    for (country_code, pos) in country_codes.iter().zip(bank_identifier_position.iter()) {
-        // TODO: Maybe combine sequences of the same character. The compiler will probably optimize this away though.
-        let pos_formatted = pos
+    for record in &contents.records {
+        // TODO: Maybe combine sequences of the same character. The compiler will probably optimize this anyway though.
+        let pos_formatted = record
+            .iban_structure
             .iter()
-            .map(|(num, t): &(&str, &str)| format!("({}, {})", num, t.to_ascii_uppercase()))
+            .map(|(num, t)| format!("({}, {})", num, t.to_ascii_uppercase()))
             .collect::<Vec<_>>()
             .join(", ");
         writeln!(
             &mut s,
             "\"{}\" => Some([{}].borrow()),",
-            country_code, pos_formatted
+            record.country_code, pos_formatted
         )?;
     }
     Ok(s)
 }
 
-fn generate_test_file(contents: &str) -> anyhow::Result<String> {
+#[derive(Debug)]
+struct RegistryExample<'a> {
+    country_code: &'a str,
+    bank_identifier: Option<&'a str>,
+    branch_identifier: Option<&'a str>,
+    bban: &'a str,
+    iban_electronic: &'a str,
+    iban_print: &'a str,
+}
+
+fn generate_test_file(contents: &RegistryReader) -> anyhow::Result<String> {
     let mut s = String::new();
-    let country_codes = read_line(contents, COUNTRY_CODE_INDEX);
-    let bank = read_line(contents, 14);
-    let branch = read_line(contents, 15);
-    let bbans = read_line(contents, 16);
-    let iban_electronic = read_line(contents, 21);
-    let iban_print = read_line(contents, 22);
-    for i in 0..country_codes.len() {
-        let bank = if bank[i].is_empty() || bank[i] == "N/A" {
-            "None".to_string()
-        } else {
-            // For Albania, the bank string contains extra '-'. This is not deducible from the IBAN.
-            // It would be an option to hardcode if the positions are fixed (are they?). Instead,
-            // we'll remove them here and assume that is also correct.
-            let bank: String = bank[i]
-                .chars()
-                .filter(|c| c.is_ascii_alphanumeric())
-                .collect();
-            format!("Some(\"{}\")", bank)
-        };
-        let branch = if branch[i].is_empty() || branch[i] == "N/A" {
-            "None".to_string()
-        } else {
-            format!("Some(\"{}\")", branch[i])
-        };
+    for record in &contents.records {
         writeln!(
             &mut s,
-            "(\"{}\", {}, {}, \"{}\", \"{}\", \"{}\"),",
-            country_codes[i], bank, branch, bbans[i], iban_electronic[i], iban_print[i]
+            "{:?},",
+            RegistryExample {
+                country_code: &record.country_code,
+                bank_identifier: record.bank_identifier_example.as_deref(),
+                branch_identifier: record.branch_identifier_example.as_deref(),
+                bban: &record.bban,
+                iban_electronic: &record.iban_electronic,
+                iban_print: &record.iban_print
+            }
         )?;
     }
     Ok(s)
