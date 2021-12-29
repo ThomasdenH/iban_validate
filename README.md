@@ -1,11 +1,9 @@
 # iban_validate
 
 [![Crates.io](https://img.shields.io/crates/v/iban_validate.svg)](https://crates.io/crates/iban_validate)
-[![Travis Build Status](https://travis-ci.org/ThomasdenH/iban_validate.svg?branch=master)](https://travis-ci.org/ThomasdenH/iban_validate)
-[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/ThomasdenH/iban_validate?svg=true)](https://ci.appveyor.com/project/ThomasdenH/iban-validate)
-[![Coverage Status](https://coveralls.io/repos/github/ThomasdenH/iban_validate/badge.svg?branch=master)](https://coveralls.io/github/ThomasdenH/iban_validate?branch=master)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Average time to resolve an issue")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Percentage of issues still open")
+![test](https://github.com/ThomasdenH/iban_validate/actions/workflows/test.yml/badge.svg)
+![Generation code](https://github.com/ThomasdenH/iban_validate/actions/workflows/generation_code.yml/badge.svg)
+![fmt & clippy](https://github.com/ThomasdenH/iban_validate/actions/workflows/fmt_and_clippy.yml/badge.svg)
 
 This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/4.0.1/iban/trait.IbanLike.html) trait.
 
