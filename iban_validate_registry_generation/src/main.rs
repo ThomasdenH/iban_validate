@@ -1,20 +1,14 @@
 #![doc = include_str!("../README.md")]
 
-use std::{
-    borrow::Borrow,
-    fmt::Write,
-    fs::File,
-    io::Read,
-    ops::{Deref, DerefMut},
-};
+use std::{fmt::Write, ops::Deref};
 
-use csv::{Reader, ReaderBuilder, StringRecord, Trim};
+use csv::{ReaderBuilder, StringRecord, Trim};
 
 use nom::{
-    branch::{self, alt},
+    branch::alt,
     bytes::complete::{tag, take, take_while},
-    character::complete::{alpha1, anychar, digit1, not_line_ending},
-    combinator::{all_consuming, eof, map, map_res},
+    character::complete::{alpha1, digit1, not_line_ending},
+    combinator::{eof, map, map_res},
     multi::many1,
     sequence::{preceded, separated_pair, terminated},
     IResult,
@@ -40,7 +34,7 @@ struct RegistryReader<'a> {
 }
 
 impl<'a> RegistryReader<'a> {
-    fn new(records_transposed: &'a Vec<StringRecord>) -> anyhow::Result<Self> {
+    fn new(records_transposed: &'a [StringRecord]) -> anyhow::Result<Self> {
         let records: Vec<RegistryRecord<'a>> = (1..records_transposed.len())
             .map(|i| -> anyhow::Result<_> {
                 Ok(RegistryRecord {
@@ -133,7 +127,7 @@ fn generate_bank_identifier_position_in_bban_match_arm(
             // Namely, deduce the pattern length and check if it matches the range.
             if let Some(bank_identifier_pattern) = &record.bank_identifier_pattern {
                 let bank_identifier_length = bank_identifier_pattern
-                    .into_iter()
+                    .iter()
                     .map(|len| len.parse::<usize>().unwrap())
                     .sum();
 
@@ -148,10 +142,12 @@ fn generate_bank_identifier_position_in_bban_match_arm(
                 let bank_identifier_example: String = record
                     .bank_identifier_example
                     .as_deref()
-                    .expect(&format!(
-                        "expected a bank identifier example for country {}",
-                        record.country_code
-                    ))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "expected a bank identifier example for country {}",
+                            record.country_code
+                        )
+                    })
                     .chars()
                     // Remove formatting like spaces and dashes
                     .filter(|c| c.is_ascii_alphanumeric())
@@ -310,12 +306,12 @@ fn generate_test_file(contents: &RegistryReader) -> anyhow::Result<String> {
             &mut s,
             "{:?},",
             RegistryExample {
-                country_code: &record.country_code,
+                country_code: record.country_code,
                 bank_identifier: record.bank_identifier_example.as_deref(),
                 branch_identifier: record.branch_identifier_example.as_deref(),
-                bban: &record.bban,
-                iban_electronic: &record.iban_electronic,
-                iban_print: &record.iban_print
+                bban: record.bban,
+                iban_electronic: record.iban_electronic,
+                iban_print: record.iban_print
             }
         )?;
     }
