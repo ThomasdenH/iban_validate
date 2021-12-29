@@ -68,9 +68,9 @@ This crate is usable on the latest stable release of the Rust compiler and other
 Licensed under either of
 
 - Apache License, Version 2.0
-  ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+  ([LICENSE-APACHE](https://github.com/ThomasdenH/iban_validate/blob/master/LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT license
-  ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+  ([LICENSE-MIT](https://github.com/ThomasdenH/iban_validate/blob/master/LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
