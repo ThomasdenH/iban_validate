@@ -68,6 +68,7 @@ impl<'a> RegistryReader<'a> {
 }
 
 fn main() -> anyhow::Result<()> {
+    // By trimming and escaping double quotes we fix entries like `"1-5\n"` (double quotes included).
     let mut reader = ReaderBuilder::new()
         .delimiter(b'\t')
         .double_quote(true)
