@@ -24,7 +24,6 @@ struct RegistryRecord<'a> {
     bank_identifier_pattern: Option<Vec<&'a str>>,
     bank_identifier_example: Option<&'a str>,
     branch_identifier_position: Option<(usize, usize)>,
-    branch_identifier_pattern: Option<Vec<&'a str>>,
     branch_identifier_example: Option<&'a str>,
     iban_structure: Vec<(&'a str, &'a str)>,
 }
@@ -35,7 +34,7 @@ struct RegistryReader<'a> {
 
 impl<'a> RegistryReader<'a> {
     fn new(records_transposed: &'a [StringRecord]) -> anyhow::Result<Self> {
-        let records: Vec<RegistryRecord<'a>> = (1..records_transposed.len())
+        let records: Vec<RegistryRecord<'a>> = (1..records_transposed[0].len())
             .map(|i| -> anyhow::Result<_> {
                 Ok(RegistryRecord {
                     country_code: &records_transposed[2][i],
@@ -56,11 +55,6 @@ impl<'a> RegistryReader<'a> {
                     branch_identifier_position: maybe(parse_range)(&records_transposed[12][i])
                         .unwrap()
                         .1,
-                    branch_identifier_pattern: maybe(potentially_malformed_pattern)(
-                        &records_transposed[12][i],
-                    )
-                    .unwrap()
-                    .1,
                     branch_identifier_example: maybe(not_line_ending)(&records_transposed[15][i])
                         .unwrap()
                         .1,
@@ -304,7 +298,7 @@ fn generate_test_file(contents: &RegistryReader) -> anyhow::Result<String> {
     for record in &contents.records {
         writeln!(
             &mut s,
-            "{:?},",
+            "{:#?},",
             RegistryExample {
                 country_code: record.country_code,
                 bank_identifier: record.bank_identifier_example.as_deref(),
