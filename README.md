@@ -7,9 +7,9 @@
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/ThomasdenH/iban_validate.svg)](http://isitmaintained.com/project/ThomasdenH/iban_validate "Percentage of issues still open")
 
-This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/4.0.0/iban/trait.IbanLike.html) trait.
+This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/4.0.1/iban/trait.IbanLike.html) trait.
 
-When BBAN parsing fails, the error type [`ParseIbanError`](https://docs.rs/iban_validate/4.0.0/iban/enum.ParseIbanError.html) provides useful information about what went wrong. Additionally, the error contains [`BaseIban`], which can still be used to access useful information.
+When BBAN parsing fails, the error type [`ParseIbanError`](https://docs.rs/iban_validate/4.0.1/iban/enum.ParseIbanError.html) provides useful information about what went wrong. Additionally, the error contains [`BaseIban`], which can still be used to access useful information.
 
 ## Example
 
@@ -80,5 +80,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
-[`iban`]: https://docs.rs/iban_validate/4.0.0/iban/struct.Iban.html
-[`baseiban`]: https://docs.rs/iban_validate/4.0.0/iban/struct.BaseIban.html
+[`iban`]: https://docs.rs/iban_validate/4.0.1/iban/struct.Iban.html
+[`baseiban`]: https://docs.rs/iban_validate/4.0.1/iban/struct.BaseIban.html

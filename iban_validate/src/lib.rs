@@ -1,5 +1,5 @@
 #![doc = include_str!("../../README.md")]
-#![doc(html_root_url = "https://docs.rs/iban_validate/4.0.0")]
+#![doc(html_root_url = "https://docs.rs/iban_validate/4.0.1")]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 #![deny(bare_trait_objects)]
