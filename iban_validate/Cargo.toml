@@ -44,4 +44,5 @@ criterion = "0.3"
 
 [[bench]]
 name = "iban_benchmark"
+path = "benches/iban_benchmark.rs"
 harness = false
