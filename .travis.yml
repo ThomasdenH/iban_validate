@@ -40,7 +40,10 @@ script:
     cargo doc --no-default-features --features serde --manifest-path iban_validate/Cargo.toml &&
     cargo build --features serde --manifest-path iban_validate/Cargo.toml &&
     cargo test --features serde --manifest-path iban_validate/Cargo.toml &&
-    cargo doc --features serde --manifest-path iban_validate/Cargo.toml
+    cargo doc --features serde --manifest-path iban_validate/Cargo.toml &&
+# Generation, build & tests
+    cargo build --manifest-path iban_validate_registry_generation/Cargo.toml &&
+    cargo test --manifest-path iban_validate_registry_generation/Cargo.toml
 
 after_success:
   # measure code coverage and upload to coveralls.io
