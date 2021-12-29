@@ -136,7 +136,6 @@ fn generate_bank_identifier_position_in_bban_match_arm(
                 // For ST, weirdly the PDF BBAN does match the bank_identifier, but the txt doesn't.
                 let bank_identifier_example: String = record
                     .bank_identifier_example
-                    .as_deref()
                     .unwrap_or_else(|| {
                         panic!(
                             "expected a bank identifier example for country {}",
@@ -285,6 +284,7 @@ fn generate_format_match_arm(contents: &RegistryReader) -> anyhow::Result<String
 }
 
 #[derive(Debug)]
+#[allow(dead_code)] // Allow since it is used for printing
 struct RegistryExample<'a> {
     country_code: &'a str,
     bank_identifier: Option<&'a str>,
@@ -302,8 +302,8 @@ fn generate_test_file(contents: &RegistryReader) -> anyhow::Result<String> {
             "{:#?},",
             RegistryExample {
                 country_code: record.country_code,
-                bank_identifier: record.bank_identifier_example.as_deref(),
-                branch_identifier: record.branch_identifier_example.as_deref(),
+                bank_identifier: record.bank_identifier_example,
+                branch_identifier: record.branch_identifier_example,
                 bban: record.bban,
                 iban_electronic: record.iban_electronic,
                 iban_print: record.iban_print
