@@ -19,8 +19,6 @@ rust:
   - beta
   # check it compiles on the latest stable compiler
   - stable
-  # Test for the minimum required version
-  - 1.39.0
 
 matrix:
   allow_failures:
