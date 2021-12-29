@@ -18,15 +18,17 @@ The following example does a full validation of the IBAN and BBAN format.
 ```rust
 use iban::*;
 
-let account = "DE44500105175407324931".parse::<Iban>()?;
-
-assert_eq!(account.country_code(), "DE");
-assert_eq!(account.check_digits(), 44);
-assert_eq!(account.bban(), "500105175407324931");
-assert_eq!(account.electronic_str(), "DE44500105175407324931");
-assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
-assert_eq!(account.bank_identifier(), Some("50010517"));
-assert_eq!(account.branch_identifier(), None);
+fn main() -> Result<(), ParseIbanError> {
+  let account = "DE44500105175407324931".parse::<Iban>()?;
+  assert_eq!(account.country_code(), "DE");
+  assert_eq!(account.check_digits(), 44);
+  assert_eq!(account.bban(), "500105175407324931");
+  assert_eq!(account.electronic_str(), "DE44500105175407324931");
+  assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
+  assert_eq!(account.bank_identifier(), Some("50010517"));
+  assert_eq!(account.branch_identifier(), None);
+  Ok(())
+}
 ```
 
 ## What does this library provide?
