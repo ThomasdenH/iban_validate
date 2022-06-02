@@ -4,6 +4,7 @@
 ![test](https://github.com/ThomasdenH/iban_validate/actions/workflows/test.yml/badge.svg)
 ![Generation code](https://github.com/ThomasdenH/iban_validate/actions/workflows/generation_code.yml/badge.svg)
 ![fmt & clippy](https://github.com/ThomasdenH/iban_validate/actions/workflows/fmt_and_clippy.yml/badge.svg)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FThomasdenH%2Fiban_validate.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FThomasdenH%2Fiban_validate?ref=badge_shield)
 
 This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/4.0.1/iban/trait.IbanLike.html) trait.
 
@@ -73,6 +74,9 @@ Licensed under either of
   ([LICENSE-MIT](https://github.com/ThomasdenH/iban_validate/blob/master/LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FThomasdenH%2Fiban_validate.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FThomasdenH%2Fiban_validate?ref=badge_large)
 
 ### Contribution
 
