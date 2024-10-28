@@ -1,3 +1,12 @@
+# 5.0.0
+This edition is technically breaking since it removes the `std` feature and implements `Error` from `core` instead of `std`.
+
+- Update registry to latest version.
+- Implement `Error` from `core` instead of `std`.
+- Remove feature `std`.
+- Update edition.
+- Update documentation links.
+
 # 4.0.1
 This version generated country-specific code automatically from the IBAN registry. It also tests all examples that can be tested. The registry is somewhat messy and inconsistent actually, and as such still requires quite some manual effort. Sometimes the registry is plainly incorrect and national documentation was used instead. This means that the crate now performs better than some of the online tools I've tested.
 
