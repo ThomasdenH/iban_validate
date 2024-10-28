@@ -1,8 +1,8 @@
 use crate::IbanLike;
 use arrayvec::ArrayString;
-use core::{convert::TryFrom, error::Error};
 use core::fmt;
 use core::str::FromStr;
+use core::{convert::TryFrom, error::Error};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
