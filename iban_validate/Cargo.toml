@@ -1,7 +1,7 @@
 [package]
 name = "iban_validate"
 # Note: When updating, also update in lib.rs and README.md
-version = "4.0.1"
+version = "5.0.0"
 authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
