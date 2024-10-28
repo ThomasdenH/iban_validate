@@ -45,7 +45,7 @@ dependency:
 
 ```toml
 [dependencies]
-iban_validate = "4"
+iban_validate = "5"
 ```
 
 ## Features
