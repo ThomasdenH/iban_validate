@@ -1,8 +1,8 @@
 use crate::IbanLike;
 use arrayvec::ArrayString;
-use core::convert::TryFrom;
 use core::fmt;
 use core::str::FromStr;
+use core::{convert::TryFrom, error::Error};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -171,10 +171,6 @@ impl fmt::Display for ParseBaseIbanError {
     }
 }
 
-#[cfg(feature = "std")]
-use std::error::Error;
-
-#[cfg(feature = "std")]
 impl Error for ParseBaseIbanError {}
 
 impl BaseIban {

@@ -20,9 +20,7 @@ name = "iban"
 path = "src/lib.rs"
 
 [features]
-default = ["std"]
-# std is only used for the `Error` trait
-std = []
+default = []
 # Builds rustdoc links, but requires nightly
 intra_rustdoc_links = []
 

@@ -33,7 +33,7 @@ fn main() -> Result<(), ParseIbanError> {
 
 - A [`Iban`] type that can be used to parse account numbers very quickly. It doesn't require allocations at all, and instead leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the hood.
 - A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]. Instead of using panic, the crate provides typed errors with what went wrong.
-- All functionality can be used in a `no_std` environment (except for the implementation of `std` traits).
+- All functionality can be used in a `no_std` environment.
 - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
 - CI tested results via the Swift provided and custom test cases, as well as proptest.
 - `#![forbid(unsafe_code)]`, making sure all code is written in safe Rust.
@@ -52,7 +52,6 @@ iban_validate = "4"
 
 The following features can be used to configure the crate:
 
-- _std_: **Enabled by default.** Enable the standard library. It is only used to provide implementations of [`Error`](https://doc.rust-lang.org/stable/std/error/trait.Error.html).
 - _serde_: Enable `serde` support for [`Iban`] and [`BaseIban`].
 
 ## Contributing
@@ -61,7 +60,7 @@ If you experience issues with this crate or want to help, please look [here](htt
 
 ## Stability
 
-This crate is usable on the latest stable release of the Rust compiler and otherwise makes no stability guarantees.
+This crate is usable on the latest stable release of the Rust compiler and adheres to semver.
 
 ## License
 
