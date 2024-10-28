@@ -361,7 +361,7 @@ impl fmt::Display for Iban {
 /// string follows the ISO 13616 standard. Apart from its own methods, `Iban` implements [`IbanLike`],
 /// which provides more functionality.
 ///
-/// The impementation of [`Display`](std::fmt::Display) provides spaced formatting of the IBAN. Electronic
+/// The impementation of [`Display`](fmt::Display) provides spaced formatting of the IBAN. Electronic
 /// formatting can be obtained via [`electronic_str`](IbanLike::electronic_str).
 ///
 /// A valid IBAN satisfies the defined format, has a valid checksum and has a BBAN format as defined in the
@@ -457,9 +457,9 @@ impl<'a> TryFrom<&'a str> for Iban {
     ///
     /// # Errors
     /// If the string does not match the IBAN format or the checksum is
-    /// invalid, [`ParseIbanError::InvalidBaseIban`](crate::ParseIbanError::InvalidBaseIban) will be
+    /// invalid, [`ParseIbanError::InvalidBaseIban`] will be
     /// returned. If the country format is invalid or unknown, the other
-    /// variants will be returned with the [`BaseIban`](crate::BaseIban) giving
+    /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
@@ -475,9 +475,9 @@ impl TryFrom<BaseIban> for Iban {
     ///
     /// # Errors
     /// If the string does not match the IBAN format or the checksum is
-    /// invalid, [`ParseIbanError::InvalidBaseIban`](crate::ParseIbanError::InvalidBaseIban) will be
+    /// invalid, [`ParseIbanError::InvalidBaseIban`] will be
     /// returned. If the country format is invalid or unknown, the other
-    /// variants will be returned with the [`BaseIban`](crate::BaseIban) giving
+    /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
         use core::borrow::Borrow;

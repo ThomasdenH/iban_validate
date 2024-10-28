@@ -23,7 +23,7 @@ const MAX_IBAN_LEN: usize = 34;
 /// no whitespace, or be in the paper format, where characters are in
 /// space-separated groups of four.
 ///
-/// Note that most useful methods are supplied by the trait [`IbanLike`](crate::IbanLike). The [`Display`](std::fmt::Display) trait provides pretty
+/// Note that most useful methods are supplied by the trait [`IbanLike`](crate::IbanLike). The [`Display`](fmt::Display) trait provides pretty
 /// print formatting.
 ///
 /// # Examples
