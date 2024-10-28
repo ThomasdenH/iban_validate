@@ -5,9 +5,10 @@
 #![deny(bare_trait_objects)]
 #![deny(elided_lifetimes_in_paths)]
 #![deny(missing_debug_implementations)]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 
 use core::convert::TryFrom;
+use core::error::Error;
 use core::fmt;
 use core::str;
 
@@ -427,10 +428,6 @@ impl fmt::Display for ParseIbanError {
     }
 }
 
-#[cfg(feature = "std")]
-use std::error::Error;
-
-#[cfg(feature = "std")]
 impl Error for ParseIbanError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
