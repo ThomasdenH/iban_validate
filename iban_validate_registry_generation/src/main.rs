@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-use std::{fmt::Write, ops::Deref};
+use std::fmt::Write;
 
 use csv::{ReaderBuilder, StringRecord, Trim};
 
@@ -146,7 +146,7 @@ fn generate_bank_identifier_position_in_bban_match_arm(
                     // Remove formatting like spaces and dashes
                     .filter(|c| c.is_ascii_alphanumeric())
                     .collect();
-                if matches!(record.country_code.deref(), "MK" | "SE" | "ST") {
+                if matches!(record.country_code, "MK" | "SE" | "ST") {
                     assert_eq!(bank_identifier_example.len(), bank_identifier_length);
                 } else {
                     // Sometimes the BBAN is just different so we should use the BBAN and not the IBAN. Sometimes the BBAN removes leading zeros or
