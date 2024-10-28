@@ -13,7 +13,6 @@ struct RegistryExample<'a> {
 
 #[test]
 fn test_registry_examples() -> Result<(), ParseIbanError> {
-    //
     let examples: &[RegistryExample] = &[
         RegistryExample {
             country_code: "AD",
@@ -152,6 +151,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             iban_print: "DE89 3704 0044 0532 0130 00",
         },
         RegistryExample {
+            country_code: "DJ",
+            bank_identifier: Some("00010"),
+            branch_identifier: Some("00000"),
+            bban: "00010000000154000100186",
+            iban_electronic: "DJ2100010000000154000100186",
+            iban_print: "DJ21 0001 0000 0001 5400 0100 186",
+        },
+        RegistryExample {
             country_code: "DK",
             bank_identifier: Some("0040"),
             branch_identifier: None,
@@ -198,6 +205,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             bban: "N/A",
             iban_electronic: "FI2112345600000785",
             iban_print: "FI21 1234 5600 0007 85",
+        },
+        RegistryExample {
+            country_code: "FK",
+            bank_identifier: Some("SC"),
+            branch_identifier: None,
+            bban: "SC123456789012",
+            iban_electronic: "FK88SC123456789012",
+            iban_print: "FK88 SC12 3456 7890 12",
         },
         RegistryExample {
             country_code: "FO",
@@ -432,6 +447,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             iban_print: "MK07 2501 2000 0058 984",
         },
         RegistryExample {
+            country_code: "MN",
+            bank_identifier: Some("1234"),
+            branch_identifier: None,
+            bban: "1234123456789123",
+            iban_electronic: "MN121234123456789123",
+            iban_print: "MN12 1234 1234 5678 9123",
+        },
+        RegistryExample {
             country_code: "MR",
             bank_identifier: Some("00020"),
             branch_identifier: Some("00101"),
@@ -456,6 +479,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             iban_print: "MU17 BOMM 0101 1010 3030 0200 000M UR",
         },
         RegistryExample {
+            country_code: "NI",
+            bank_identifier: Some("BAPR"),
+            branch_identifier: None,
+            bban: "BAPR00000013000003558124",
+            iban_electronic: "NI04BAPR00000013000003558124",
+            iban_print: "NI04 BAPR 0000 0013 0000 0355 8124",
+        },
+        RegistryExample {
             country_code: "NL",
             bank_identifier: Some("ABNA"),
             branch_identifier: None,
@@ -472,12 +503,12 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             iban_print: "NO93 8601 1117 947",
         },
         RegistryExample {
-            country_code: "PK",
-            bank_identifier: Some("SCBL"),
+            country_code: "OM",
+            bank_identifier: Some("018"),
             branch_identifier: None,
-            bban: "SCBL0000001123456702",
-            iban_electronic: "PK36SCBL0000001123456702",
-            iban_print: "PK36 SCBL 0000 0011 2345 6702",
+            bban: "0180000001299123456",
+            iban_electronic: "OM810180000001299123456",
+            iban_print: "OM81 0180 0000 0129 9123 456",
         },
         RegistryExample {
             country_code: "PL",
@@ -498,7 +529,7 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
         RegistryExample {
             country_code: "PT",
             bank_identifier: Some("0002"),
-            branch_identifier: None,
+            branch_identifier: Some("0123"),
             bban: "000201231234567890154",
             iban_electronic: "PT50000201231234567890154",
             iban_print: "PT50 0002 0123 1234 5678 9015 4",
@@ -526,6 +557,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             bban: "260005601001611379",
             iban_electronic: "RS35260005601001611379",
             iban_print: "RS35 2600 0560 1001 6113 79",
+        },
+        RegistryExample {
+            country_code: "RU",
+            bank_identifier: Some("044525225"),
+            branch_identifier: Some("40817"),
+            bban: "044525225 40817 810 5 3809 1310419",
+            iban_electronic: "RU1704452522540817810538091310419",
+            iban_print: "RU17 0445 2522 5408 1781 0538 0913 1041 9",
         },
         RegistryExample {
             country_code: "SA",
@@ -582,6 +621,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             bban: "U0322509800000000270100",
             iban_electronic: "SM86U0322509800000000270100",
             iban_print: "SM86 U032 2509 8000 0000 0270 100",
+        },
+        RegistryExample {
+            country_code: "SO",
+            bank_identifier: Some("1000"),
+            branch_identifier: Some("001"),
+            bban: "1000001001000100141",
+            iban_electronic: "SO211000001001000100141",
+            iban_print: "SO21 1000 0010 0100 0100 141",
         },
         RegistryExample {
             country_code: "ST",
@@ -655,6 +702,14 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
             iban_electronic: "XK051212012345678906",
             iban_print: "XK05 1212 0123 4567 8906",
         },
+        RegistryExample {
+            country_code: "YE",
+            bank_identifier: Some("CBYE"),
+            branch_identifier: Some("0001"),
+            bban: "CBYE0001018861234567891234",
+            iban_electronic: "YE15CBYE0001018861234567891234",
+            iban_print: "YE15 CBYE 0001 0188 6123 4567 8912 34",
+        },
     ];
 
     for RegistryExample {
@@ -666,8 +721,8 @@ fn test_registry_examples() -> Result<(), ParseIbanError> {
         iban_print,
     } in examples
     {
-        if *country_code == "ST" {
-            // Incredibly, the IBAN for ST actually has an incorrect checksum. Yes, the example of a correct IBAN is incorrect.
+        if matches!(*country_code, "NI" | "RU" | "ST") {
+            // For these country codes, the provided IBAN is actually invalid. We will just ignore them.
             continue;
         }
 
