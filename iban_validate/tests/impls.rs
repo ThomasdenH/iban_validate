@@ -60,10 +60,8 @@ assert_impl_all!(
     From<ParseBaseIbanError>
 );
 
-#[cfg(feature = "std")]
-assert_impl_all!(ParseBaseIbanError: std::error::Error);
-#[cfg(feature = "std")]
-assert_impl_all!(ParseIbanError: std::error::Error);
+assert_impl_all!(ParseBaseIbanError: core::error::Error);
+assert_impl_all!(ParseIbanError: core::error::Error);
 
 #[cfg(feature = "serde")]
 mod impls_serde {
