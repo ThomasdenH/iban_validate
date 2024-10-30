@@ -1,3 +1,8 @@
+# 5.0.1
+- Update registry to latest version: Release 98.
+- Update country specific generation code. Inconsistencies are now resolved manually when generating the country specific code. Incorrect examples are now fixed before testing where they were previously ignored.
+- For "JO" (Jordan), we now return the bank branch. The registry provides an example but no range so this seems to be the best solution.
+
 # 5.0.0
 This edition is technically breaking since it removes the `std` feature and implements `Error` from `core` instead of `std`.
 
