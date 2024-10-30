@@ -31,20 +31,6 @@ struct RegistryRecord<'a> {
     branch_identifier_position: Option<Range<usize>>,
     branch_identifier_example: Option<&'a str>,
     iban_structure: Vec<(&'a str, &'a str)>,
-    /// True if the example IBAN is valid.
-    example_iban_valid: bool,
-    /// True if the pretty print format is correct.
-    pretty_print_valid: bool,
-    /// True if the bank identifier matches the IBAN
-    bank_matches_iban: bool,
-    /// True if the bank identifier matches the IBAN
-    bank_matches_bban: bool,
-    /// True if the branch identifier matches the IBAN
-    branch_matches_iban: bool,
-    /// True if the branch identifier matches the BBAN
-    branch_matches_bban: bool,
-    /// True if the BBAN corresponds to the IBAN
-    iban_matches_bban: bool,
 }
 
 impl<'a> RegistryRecord<'a> {
@@ -68,34 +54,43 @@ impl<'a> RegistryRecord<'a> {
                 self.branch_identifier_position.as_mut().unwrap().end -= 1;
             }
             "BA" => {
-                self.bank_matches_iban = false;
-                self.branch_matches_iban = false;
-                self.iban_matches_bban = false;
+                // The BBAN does not match the IBAN. The bank and branch match
+                // the BBAN. Manually fix all three to correspond to IBAN.
+                assert_eq!(self.bban, "1990440001200279");
+                assert_eq!(self.bank_identifier_example, Some("199"));
+                assert_eq!(self.branch_identifier_example, Some("044"));
+                self.bban = "1290079401028494";
+                self.bank_identifier_example = Some("129");
+                self.branch_identifier_example = Some("007");
             }
             "BI" => {
-                self.pretty_print_valid = false;
+                // Pretty print format is incorrect, fix.
+                assert_eq!(self.iban_print, "BI42 10000 10001 00003320451 81");
+                self.iban_print = "BI42 1000 0100 0100 0033 2045 181";
             }
             "BR" => {
-                self.iban_matches_bban = false;
+                // The BBAN differs by one letter. Fix.
+                assert_eq!(self.bban, "00360305000010009795493P1");
+                self.bban = "00360305000010009795493C1";
             }
             "CR" => {
-                self.bank_matches_bban = false;
-                self.iban_matches_bban = false;
+                // The BBAN removes the leading '0'. Add it back.
+                assert_eq!(self.bban, "15202001026284066");
+                self.bban = "015202001026284066";
             }
             "FI" => {
                 // Not provided, add manually
                 assert!(self.bank_identifier_pattern.is_none());
                 self.bank_identifier_pattern = Some(vec!["3"]);
 
-                self.bank_matches_bban = false;
-                self.branch_matches_bban = false;
-                self.iban_matches_bban = false;
+                // The BBAN is not provided, add manually as well.
+                assert_eq!(self.bban, "N/A");
+                self.bban = "12345600000785";
             }
             "IL" => {
-                // This really looks like a typo.
-                // IBAN: IL620108000000099999999
-                // BBAN:     010800000099999999
-                self.iban_matches_bban = false;
+                // This looks like a typo. There is one 0 missing in the BBAN.
+                assert_eq!(self.bban, "010800000099999999");
+                self.bban = "0108000000099999999";
             }
             "JO" => {
                 // Fix the bank position. Perhaps it was indexed into the IBAN
@@ -115,35 +110,52 @@ impl<'a> RegistryRecord<'a> {
             }
             "LY" => {
                 // Incorrect spacing.
-                self.pretty_print_valid = false;
+                assert_eq!(self.iban_print, "LY83 002 048 000020100120361");
+                self.iban_print = "LY83 0020 4800 0020 1001 2036 1";
             }
             "MK" => {
-                self.bank_matches_bban = false;
-                self.bank_matches_iban = false;
+                // The bank identifier does not match the BBAN or IBAN.
+                assert_eq!(self.bank_identifier_example, Some("300"));
+                self.bank_identifier_example = Some("250");
             }
             "NI" => {
                 // Check digit incorrect!
-                self.example_iban_valid = false;
+                assert_eq!(self.iban_electronic, "NI04BAPR00000013000003558124");
+                assert_eq!(self.iban_print, "NI04 BAPR 0000 0013 0000 0355 8124");
+                self.iban_electronic = "NI45BAPR00000013000003558124";
+                self.iban_print = "NI45 BAPR 0000 0013 0000 0355 8124";
             }
             "RU" => {
                 // Check digit incorrect!
-                self.example_iban_valid = false;
+                assert_eq!(self.iban_electronic, "RU1704452522540817810538091310419");
+                assert_eq!(self.iban_print, "RU17 0445 2522 5408 1781 0538 0913 1041 9");
+                self.iban_electronic = "RU0304452522540817810538091310419";
+                self.iban_print = "RU03 0445 2522 5408 1781 0538 0913 1041 9";
             }
             "SE" => {
-                self.bank_matches_bban = false;
-                self.bank_matches_iban = false;
+                // The bank identifier does not match.
+                assert_eq!(self.bank_identifier_example, Some("123"));
+                self.bank_identifier_example = Some("500");
             }
             "ST" => {
-                self.bank_matches_bban = false;
-                self.bank_matches_iban = false;
+                // The IBAN and BBAN differ from the PDF, but the bank was not
+                // updated.
+                assert_eq!(self.bank_identifier_example, Some("0001"));
+                self.bank_identifier_example = Some("0002");
+
                 // Check digit incorrect!
-                self.example_iban_valid = false;
+                assert_eq!(self.iban_electronic, "ST68000200010192194210112");
+                assert_eq!(self.iban_print, "ST68 0002 0001 0192 1942 1011 2");
+                self.iban_electronic = "ST32000200010192194210112";
+                self.iban_print = "ST32 0002 0001 0192 1942 1011 2";
             }
             "SV" => {
-                self.pretty_print_valid = false;
+                assert_eq!(self.iban_print, "SV 62 CENR 00000000000000700025");
+                self.iban_print = "SV62 CENR 0000 0000 0000 0070 0025";
             }
             "VA" => {
-                self.pretty_print_valid = false;
+                assert_eq!(self.iban_print, "VA59 001 1230 0001 2345 678");
+                self.iban_print = "VA59 0011 2300 0012 3456 78";
             }
             _ => {}
         }
@@ -186,24 +198,12 @@ impl<'a> RegistryRecord<'a> {
             assert_eq!(bank_example.len(), bank_identifier_length);
 
             // As a final check, see if the example BBAN and and bank
-            // identifier match. Skip some countries since the examples
-            // don't match.
-            if self.bank_matches_bban {
-                assert_eq!(self.bban[bank_position.clone()], bank_example);
-            } else {
-                assert_ne!(self.bban[bank_position.clone()], bank_example);
-            }
-            if self.bank_matches_iban {
-                assert_eq!(
-                    self.iban_electronic[bank_position.start + 4..bank_position.end + 4],
-                    bank_example
-                );
-            } else {
-                assert_ne!(
-                    self.iban_electronic[bank_position.start + 4..bank_position.end + 4],
-                    bank_example
-                );
-            }
+            // identifier match.
+            assert_eq!(self.bban[bank_position.clone()], bank_example);
+            assert_eq!(
+                self.iban_electronic[bank_position.start + 4..bank_position.end + 4],
+                bank_example
+            );
         } else {
             // No bank position. We don't expect a length or an example either.
             assert!(self.bank_identifier_example.is_none());
@@ -260,13 +260,6 @@ impl<'a> RegistryReader<'a> {
                         .unwrap()
                         .1,
                     iban_structure: iban_structure(&records_transposed[18][i]).unwrap().1,
-                    example_iban_valid: true,
-                    bank_matches_bban: true,
-                    bank_matches_iban: true,
-                    branch_matches_bban: true,
-                    branch_matches_iban: true,
-                    pretty_print_valid: true,
-                    iban_matches_bban: true,
                 })
             })
             .collect::<Result<_, _>>()
@@ -477,16 +470,6 @@ struct RegistryExample<'a> {
     bban: &'a str,
     iban_electronic: &'a str,
     iban_print: &'a str,
-    /// True if the example IBAN is valid.
-    example_iban_valid: bool,
-    /// True if the pretty print format is correct.
-    pretty_print_valid: bool,
-    /// True if the bank identifier matches the IBAN
-    bank_matches_iban: bool,
-    /// True if the branch identifier matches the IBAN
-    branch_matches_iban: bool,
-    /// True if the BBAN corresponds to the IBAN
-    iban_matches_bban: bool,
 }
 
 fn generate_test_file(write: &mut impl Write, contents: &RegistryReader) -> anyhow::Result<()> {
@@ -501,17 +484,6 @@ pub struct RegistryExample<'a> {{
     pub bban: &'a str,
     pub iban_electronic: &'a str,
     pub iban_print: &'a str,
-
-    /// True if the example IBAN is valid.
-    pub example_iban_valid: bool,
-    /// True if the pretty print format is correct.
-    pub pretty_print_valid: bool,
-    /// True if the bank identifier matches the IBAN
-    pub bank_matches_iban: bool,
-    /// True if the branch identifier matches the IBAN
-    pub branch_matches_iban: bool,
-    /// True if the BBAN corresponds to the IBAN
-    pub iban_matches_bban: bool
 }}
 
 pub const EXAMPLES: &[RegistryExample] = &{:#?};",
@@ -525,11 +497,6 @@ pub const EXAMPLES: &[RegistryExample] = &{:#?};",
                 bban: record.bban,
                 iban_electronic: record.iban_electronic,
                 iban_print: record.iban_print,
-                example_iban_valid: record.example_iban_valid,
-                bank_matches_iban: record.bank_matches_iban,
-                branch_matches_iban: record.branch_matches_iban,
-                iban_matches_bban: record.iban_matches_bban,
-                pretty_print_valid: record.pretty_print_valid
             })
             .collect::<Vec<_>>()
             .as_slice()
