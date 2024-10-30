@@ -32,7 +32,7 @@ fn main() -> Result<(), ParseIbanError> {
 ## What does this library provide?
 
 - A [`Iban`] type that can be used to parse account numbers very quickly. It doesn't require allocations at all, and instead leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the hood.
-- A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]. Instead of using panic, the crate provides typed errors with what went wrong.
+- A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]). Instead of using panic, the crate provides typed errors with what went wrong.
 - All functionality can be used in a `no_std` environment.
 - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
 - CI tested results via the Swift provided and custom test cases, as well as proptest.
