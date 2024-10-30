@@ -1,8 +1,10 @@
 use crate::IbanLike;
 use arrayvec::ArrayString;
-use core::fmt;
+use core::fmt::{self, Debug, Display};
 use core::str::FromStr;
 use core::{convert::TryFrom, error::Error};
+#[cfg(doc)]
+use crate::{Iban, ParseIbanError};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -17,14 +19,22 @@ const MAX_IBAN_LEN: usize = 34;
 /// Represents an IBAN that passed basic checks, but not necessarily the BBAN
 /// validation. This corresponds to the validation as described in ISO 13616-1.
 ///
-/// To be exact, the IBAN must start with two uppercase ASCII letters, followed
+/// To be exact, the IBAN...
+/// - must start with two uppercase ASCII letters, followed
 /// by two digits, followed by any number of digits and ASCII
-/// letters. Additionally its checksum should be valid. It should either contain
-/// no whitespace, or be in the paper format, where characters are in
-/// space-separated groups of four.
+/// letters.
+/// - must have a valid checksum.
+/// - must contain no whitespace, or be in the paper format, where
+///   characters are in space-separated groups of four.
 ///
 /// Note that most useful methods are supplied by the trait [`IbanLike`](crate::IbanLike). The [`Display`](fmt::Display) trait provides pretty
 /// print formatting.
+/// 
+/// A [`BaseIban`] does not enforce the country specific BBAN format as
+/// described in the Swift registry. In most cases, you probably want to use
+/// an [`Iban`] instead, which additionally does country specific validation.
+/// When parsing an [`Iban`] fails, the [`ParseIbanError`] will contain the
+/// [`BaseIban`] if it was valid.
 ///
 /// # Examples
 /// An example of parsing and using a correct IBAN:
@@ -34,7 +44,7 @@ const MAX_IBAN_LEN: usize = 34;
 ///
 /// let iban: BaseIban = "MR13 0002 0001 0100 0012 3456 753".parse()?;
 /// assert_eq!(iban.electronic_str(), "MR1300020001010000123456753");
-/// // The pretty print format
+/// // The pretty print 'paper' format
 /// assert_eq!(iban.to_string(), "MR13 0002 0001 0100 0012 3456 753");
 /// assert_eq!(iban.country_code(), "MR");
 /// assert_eq!(iban.check_digits_str(), "13");
@@ -56,6 +66,24 @@ const MAX_IBAN_LEN: usize = 34;
 ///     "MR0000020001010000123456754".parse::<BaseIban>(),
 ///     Err(ParseBaseIbanError::InvalidChecksum)
 /// );
+/// ```
+/// 
+/// ## Formatting
+/// The IBAN specification describes two formats: an electronic format without
+/// whitespace and a paper format which seperates the IBAN in groups of
+/// four characters. Both will be parsed correctly by this crate. When
+/// formatting, [`Debug`] can be used to output the former and [`Display`] for
+/// the latter. This is true for a [`BaseIban`] as well as an [`Iban`].
+/// Alternatively, you can use [`IbanLike::electronic_str`] to obtain the
+/// electronic format as a string slice.
+/// ```
+/// # use iban::ParseBaseIbanError;
+/// let iban: iban::BaseIban = "RO66BACX0000001234567890".parse()?;
+/// // Use Debug for the electronic format.
+/// assert_eq!(&format!("{:?}", iban), "RO66BACX0000001234567890");
+/// // Use Display for the paper format.
+/// assert_eq!(&format!("{}", iban), "RO66 BACX 0000 0012 3456 7890");
+/// # Ok::<(), ParseBaseIbanError>(())
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BaseIban {
@@ -104,13 +132,13 @@ impl IbanLike for BaseIban {
     }
 }
 
-impl fmt::Debug for BaseIban {
+impl Debug for BaseIban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.s.fmt(f)
+        Display::fmt(&self.s, f)
     }
 }
 
-impl fmt::Display for BaseIban {
+impl Display for BaseIban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for c in self.s.chars().enumerate().flat_map(|(i, c)| {
             // Add a space before a character if it is the start of a group of four.
@@ -264,7 +292,7 @@ impl BaseIban {
         Ok(address_no_spaces)
     }
 
-    /// Parse a pretty print IBAN from a `str`.
+    /// Parse a pretty print 'paper' IBAN from a `str`.
     fn try_form_string_from_pretty_print(
         s: &str,
     ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError> {

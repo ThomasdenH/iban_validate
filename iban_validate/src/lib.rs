@@ -9,7 +9,7 @@
 
 use core::convert::TryFrom;
 use core::error::Error;
-use core::fmt;
+use core::fmt::{Display, Debug, self};
 use core::str;
 
 mod base_iban;
@@ -155,15 +155,15 @@ impl From<Iban> for BaseIban {
     }
 }
 
-impl fmt::Debug for Iban {
+impl Debug for Iban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.base_iban, f)
+        Debug::fmt(&self.base_iban, f)
     }
 }
 
-impl fmt::Display for Iban {
+impl Display for Iban {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.base_iban, f)
+        Display::fmt(&self.base_iban, f)
     }
 }
 
@@ -171,12 +171,23 @@ impl fmt::Display for Iban {
 /// string follows the ISO 13616 standard. Apart from its own methods, `Iban` implements [`IbanLike`],
 /// which provides more functionality.
 ///
-/// The impementation of [`Display`](fmt::Display) provides spaced formatting of the IBAN. Electronic
+/// The impementation of [`Display`] provides spaced formatting of the IBAN. Electronic
 /// formatting can be obtained via [`electronic_str`](IbanLike::electronic_str).
 ///
-/// A valid IBAN satisfies the defined format, has a valid checksum and has a BBAN format as defined in the
-/// IBAN registry.
+/// A valid IBAN...
+/// - must start with two uppercase ASCII letters, followed
+/// by two digits, followed by any number of digits and ASCII
+/// letters.
+/// - must have a valid checksum.
+/// - must contain no whitespace, or be in the paper format, where
+///   characters are in space-separated groups of four.
+/// - must adhere to the country-specific format.
 ///
+/// Sometimes it may be desirable to accept IBANs that do not have their
+/// country registered in the IBAN registry, or it may simply be unimportant
+/// whether the country's BBAN format was followed. In that case, you can use
+/// a [`BaseIban`] instead.
+/// 
 /// # Examples
 /// ```rust
 /// use iban::*;
@@ -185,6 +196,23 @@ impl fmt::Display for Iban {
 /// # Ok::<(), iban::ParseIbanError>(())
 /// ```
 ///
+/// ## Formatting
+/// The IBAN specification describes two formats: an electronic format without
+/// whitespace and a paper format which seperates the IBAN in groups of
+/// four characters. Both will be parsed correctly by this crate. When
+/// formatting, [`Debug`] can be used to output the former and [`Display`] for
+/// the latter. This is true for a [`BaseIban`] as well as an [`Iban`].
+/// Alternatively, you can use [`IbanLike::electronic_str`] to obtain the
+/// electronic format as a string slice.
+/// ```
+/// # use iban::ParseIbanError;
+/// let iban: iban::Iban = "RO66BACX0000001234567890".parse()?;
+/// // Use Debug for the electronic format.
+/// assert_eq!(&format!("{:?}", iban), "RO66BACX0000001234567890");
+/// // Use Display for the pretty print format.
+/// assert_eq!(&format!("{}", iban), "RO66 BACX 0000 0012 3456 7890");
+/// # Ok::<(), ParseIbanError>(())
+/// ```
 /// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
 #[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub struct Iban {
