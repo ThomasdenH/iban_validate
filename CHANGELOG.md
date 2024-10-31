@@ -1,3 +1,8 @@
+# 5.1.0
+- Add implementations of `AsRef` and `AsMut`
+- Enable all features on `docs.rs`
+- Remove now default `intra_rustdoc_links` feature flag
+
 # 5.0.1
 - Update registry to latest version: Release 98.
 - Update country specific generation code. Inconsistencies are now resolved manually when generating the country specific code. Incorrect examples are now fixed before testing where they were previously ignored.

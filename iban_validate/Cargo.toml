@@ -6,7 +6,7 @@ authors = ["Thomas den Hollander <denhollander.thomas@gmail.com>"]
 description = "A small crate to verify IBAN account numbers."
 repository = "https://github.com/ThomasdenH/iban_check"
 license = "MIT OR Apache-2.0"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["iban", "iban-validator"]
 categories = ["parsing"]
 edition = "2021"
@@ -21,8 +21,10 @@ path = "src/lib.rs"
 
 [features]
 default = []
-# Builds rustdoc links, but requires nightly
-intra_rustdoc_links = []
+
+# Enables all features when building documentation
+[package.metadata.docs.rs]
+features = ["serde"]
 
 [dependencies.serde]
 version = "1"
