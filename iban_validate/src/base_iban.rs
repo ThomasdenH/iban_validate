@@ -205,6 +205,18 @@ impl fmt::Display for ParseBaseIbanError {
 
 impl Error for ParseBaseIbanError {}
 
+impl AsRef<ParseBaseIbanError> for ParseBaseIbanError {
+    fn as_ref(&self) -> &ParseBaseIbanError {
+        self
+    }
+}
+
+impl AsMut<ParseBaseIbanError> for ParseBaseIbanError {
+    fn as_mut(&mut self) -> &mut ParseBaseIbanError {
+        self
+    }
+}
+
 impl BaseIban {
     /// Compute the checksum for the address. The code that the string contains
     /// only valid characters: `'0'..='9'` and `'A'..='Z'`.
@@ -370,5 +382,17 @@ impl<'a> TryFrom<&'a str> for BaseIban {
     #[inline]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value.parse()
+    }
+}
+
+impl AsRef<BaseIban> for BaseIban {
+    fn as_ref(&self) -> &BaseIban {
+        self
+    }
+}
+
+impl AsMut<BaseIban> for BaseIban {
+    fn as_mut(&mut self) -> &mut BaseIban {
+        self
     }
 }

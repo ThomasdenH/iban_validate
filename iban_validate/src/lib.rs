@@ -314,6 +314,18 @@ impl Error for ParseIbanError {
     }
 }
 
+impl AsRef<ParseIbanError> for ParseIbanError {
+    fn as_ref(&self) -> &ParseIbanError {
+        self
+    }
+}
+
+impl AsMut<ParseIbanError> for ParseIbanError {
+    fn as_mut(&mut self) -> &mut ParseIbanError {
+        self
+    }
+}
+
 impl<'a> TryFrom<&'a str> for Iban {
     type Error = ParseIbanError;
     /// Parse an IBAN without taking the BBAN into consideration.
@@ -362,6 +374,24 @@ impl str::FromStr for Iban {
     #[inline]
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         Iban::try_from(address)
+    }
+}
+
+impl AsRef<Iban> for Iban {
+    fn as_ref(&self) -> &Iban {
+        self
+    }
+}
+
+impl AsMut<Iban> for Iban {
+    fn as_mut(&mut self) -> &mut Iban {
+        self
+    }
+}
+
+impl AsRef<BaseIban> for Iban {
+    fn as_ref(&self) -> &BaseIban {
+        &self.base_iban
     }
 }
 

@@ -18,7 +18,9 @@ assert_impl_all!(
     TryFrom<&'static str>,
     Send,
     Sync,
-    From<Iban>
+    From<Iban>,
+    AsRef<BaseIban>,
+    AsMut<BaseIban>
 );
 assert_impl_all!(
     Iban: Copy,
@@ -33,7 +35,12 @@ assert_impl_all!(
     TryFrom<&'static str>,
     Send,
     Sync,
-    Into<BaseIban>
+    Into<BaseIban>,
+    // We can convert between references. We cannot convert between mutable
+    // references, since a changed BaseIban may not be a valid Iban anymore.
+    AsRef<BaseIban>,
+    AsRef<Iban>,
+    AsMut<Iban>
 );
 assert_impl_all!(
     ParseBaseIbanError: Copy,
@@ -45,7 +52,9 @@ assert_impl_all!(
     Send,
     Sync,
     Display,
-    Into<ParseIbanError>
+    Into<ParseIbanError>,
+    AsRef<ParseBaseIbanError>,
+    AsMut<ParseBaseIbanError>
 );
 assert_impl_all!(
     ParseIbanError: Copy,
@@ -57,7 +66,9 @@ assert_impl_all!(
     Send,
     Sync,
     Display,
-    From<ParseBaseIbanError>
+    From<ParseBaseIbanError>,
+    AsRef<ParseIbanError>,
+    AsMut<ParseIbanError>
 );
 
 assert_impl_all!(ParseBaseIbanError: core::error::Error);
