@@ -1,10 +1,10 @@
 use crate::IbanLike;
+#[cfg(doc)]
+use crate::{Iban, ParseIbanError};
 use arrayvec::ArrayString;
 use core::fmt::{self, Debug, Display};
 use core::str::FromStr;
 use core::{convert::TryFrom, error::Error};
-#[cfg(doc)]
-use crate::{Iban, ParseIbanError};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -29,7 +29,7 @@ const MAX_IBAN_LEN: usize = 34;
 ///
 /// Note that most useful methods are supplied by the trait [`IbanLike`](crate::IbanLike). The [`Display`](fmt::Display) trait provides pretty
 /// print formatting.
-/// 
+///
 /// A [`BaseIban`] does not enforce the country specific BBAN format as
 /// described in the Swift registry. In most cases, you probably want to use
 /// an [`Iban`] instead, which additionally does country specific validation.
@@ -67,7 +67,7 @@ const MAX_IBAN_LEN: usize = 34;
 ///     Err(ParseBaseIbanError::InvalidChecksum)
 /// );
 /// ```
-/// 
+///
 /// ## Formatting
 /// The IBAN specification describes two formats: an electronic format without
 /// whitespace and a paper format which seperates the IBAN in groups of
@@ -307,17 +307,15 @@ impl BaseIban {
         // means that the last character should be a space, but this is
         // invalid. If it is not, then the last character is a character that
         // appears in the IBAN.
-        if bytes.len() % 5 == 0 {
+        if bytes.len() % (PAPER_GROUP_SIZE + 1) == 0 {
             return Err(ParseBaseIbanError::InvalidFormat);
         }
 
         // We check that every fifth character is a space, knowing already that
         // account number ends with a character that appears in the IBAN.
         if bytes
-            .iter()
-            .enumerate()
-            .filter(|(i, _c)| i % 5 == 4)
-            .any(|(_, &byte_at_space_position)| byte_at_space_position != b' ')
+            .chunks_exact(PAPER_GROUP_SIZE + 1)
+            .any(|chunk| chunk[PAPER_GROUP_SIZE] != b' ')
         {
             return Err(ParseBaseIbanError::InvalidFormat);
         }
