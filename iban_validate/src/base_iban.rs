@@ -127,12 +127,14 @@ impl<'de> Deserialize<'de> for BaseIban {
 }
 
 impl IbanLike for BaseIban {
+    #[inline]
     fn electronic_str(&self) -> &str {
         self.s.as_str()
     }
 }
 
 impl Debug for BaseIban {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Display::fmt(&self.s, f)
     }
@@ -364,6 +366,7 @@ impl<'a> TryFrom<&'a str> for BaseIban {
     /// If the string does not match the IBAN format or the checksum is
     /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
     /// returned.
+    #[inline]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value.parse()
     }

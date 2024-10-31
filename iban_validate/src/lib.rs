@@ -45,6 +45,7 @@ pub trait IbanLike {
     /// assert_eq!(iban.country_code(), "DE");
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     fn country_code(&self) -> &str {
         &self.electronic_str()[0..2]
     }
@@ -60,6 +61,7 @@ pub trait IbanLike {
     /// assert_eq!(iban.check_digits_str(), "44");
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     fn check_digits_str(&self) -> &str {
         &self.electronic_str()[2..4]
     }
@@ -74,6 +76,7 @@ pub trait IbanLike {
     /// assert_eq!(iban.check_digits(), 44);
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     fn check_digits(&self) -> u8 {
         self.check_digits_str().parse().expect(
             "Could not parse check digits. Please create an issue at \
@@ -92,12 +95,14 @@ pub trait IbanLike {
     /// assert_eq!(iban.bban_unchecked(), "500105175407324931");
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     fn bban_unchecked(&self) -> &str {
         &self.electronic_str()[4..]
     }
 }
 
 impl IbanLike for Iban {
+    #[inline]
     fn electronic_str(&self) -> &str {
         self.base_iban.electronic_str()
     }
@@ -114,6 +119,7 @@ impl Iban {
     /// assert_eq!(iban.bban(), "500105175407324931");
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     pub fn bban(&self) -> &str {
         self.bban_unchecked()
     }
@@ -128,6 +134,7 @@ impl Iban {
     /// assert_eq!(iban.bank_identifier(), Some("0001"));
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     pub fn bank_identifier(&self) -> Option<&str> {
         generated::bank_identifier(self.country_code())
             .map(|range| &self.electronic_str()[4..][range])
@@ -143,6 +150,7 @@ impl Iban {
     /// assert_eq!(iban.branch_identifier(), Some("2030"));
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[inline]
     pub fn branch_identifier(&self) -> Option<&str> {
         generated::branch_identifier(self.country_code())
             .map(|range| &self.electronic_str()[4..][range])
@@ -150,18 +158,21 @@ impl Iban {
 }
 
 impl From<Iban> for BaseIban {
+    #[inline]
     fn from(value: Iban) -> BaseIban {
         value.base_iban
     }
 }
 
 impl Debug for Iban {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Debug::fmt(&self.base_iban, f)
     }
 }
 
 impl Display for Iban {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Display::fmt(&self.base_iban, f)
     }
@@ -260,6 +271,7 @@ pub enum ParseIbanError {
 }
 
 impl From<ParseBaseIbanError> for ParseIbanError {
+    #[inline]
     fn from(source: ParseBaseIbanError) -> ParseIbanError {
         ParseIbanError::InvalidBaseIban { source }
     }
@@ -281,6 +293,7 @@ impl fmt::Display for ParseIbanError {
 }
 
 impl Error for ParseIbanError {
+    #[inline]
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             ParseIbanError::InvalidBaseIban { source } => Some(source),

@@ -327,6 +327,7 @@ fn generate_bank_identifier_position_in_bban_match_arm(
         writer,
         "
 /// Get the position of the bank in the BBAN.
+#[inline]
 pub(crate) fn bank_identifier(country_code: &str) -> Option<core::ops::Range<usize>> {{
 \t#[allow(clippy::match_same_arms)] // For clarity, identical arms are not combined.
 \tmatch country_code {{"
@@ -378,6 +379,7 @@ fn generate_branch_identifier_position_in_bban_match_arm(
     writeln!(
         write,
         "/// Get the position of the branch in the BBAN.
+#[inline]
 pub(crate) fn branch_identifier(country_code: &str) -> Option<core::ops::Range<usize>> {{
 \t#[allow(clippy::match_same_arms)] // For clarity, identical arms are not combined.
 \tmatch country_code {{"

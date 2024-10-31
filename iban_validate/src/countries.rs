@@ -13,6 +13,7 @@ pub(super) enum CharacterType {
 }
 
 impl CharacterType {
+    #[inline]
     fn matches(self, c: u8) -> bool {
         use CharacterType::{A, C, N};
         const MASK_CAPITAL: u8 = 0b0100_0000;
@@ -45,6 +46,7 @@ impl Matchable for &'_ [(usize, CharacterType)] {
     }
 }
 
+#[inline]
 fn len(a: &[(usize, CharacterType)]) -> usize {
     a.iter().map(|(count, _)| count).sum()
 }
