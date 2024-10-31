@@ -249,7 +249,6 @@ impl BaseIban {
     /// Parse a standardized IBAN string from an iterator. We iterate through
     /// bytes, not characters. When a character is not ASCII, the IBAN is
     /// automatically invalid.
-    #[must_use]
     fn try_form_string_from_electronic<T>(
         mut chars: T,
     ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError>
@@ -299,7 +298,6 @@ impl BaseIban {
     }
 
     /// Parse a pretty print 'paper' IBAN from a `str`.
-    #[must_use]
     fn try_form_string_from_pretty_print(
         s: &str,
     ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError> {
@@ -346,7 +344,6 @@ impl FromStr for BaseIban {
     /// If the string does not match the IBAN format or the checksum is
     /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
     /// returned.
-    #[must_use]
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         let address_no_spaces =
             BaseIban::try_form_string_from_electronic(address.as_bytes().iter().copied())
@@ -371,7 +368,6 @@ impl<'a> TryFrom<&'a str> for BaseIban {
     /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
     /// returned.
     #[inline]
-    #[must_use]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value.parse()
     }

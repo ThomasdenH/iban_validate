@@ -9,7 +9,7 @@
 
 use core::convert::TryFrom;
 use core::error::Error;
-use core::fmt::{Display, Debug, self};
+use core::fmt::{self, Debug, Display};
 use core::str;
 
 mod base_iban;
@@ -208,7 +208,7 @@ impl Display for Iban {
 /// country registered in the IBAN registry, or it may simply be unimportant
 /// whether the country's BBAN format was followed. In that case, you can use
 /// a [`BaseIban`] instead.
-/// 
+///
 /// # Examples
 /// ```rust
 /// use iban::*;
@@ -325,7 +325,6 @@ impl<'a> TryFrom<&'a str> for Iban {
     /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
     #[inline]
-    #[must_use]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
             .parse::<BaseIban>()
@@ -344,7 +343,6 @@ impl TryFrom<BaseIban> for Iban {
     /// returned. If the country format is invalid or unknown, the other
     /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
-    #[must_use]
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
         use countries::Matchable;
         generated::country_pattern(base_iban.country_code())
@@ -362,7 +360,6 @@ impl TryFrom<BaseIban> for Iban {
 impl str::FromStr for Iban {
     type Err = ParseIbanError;
     #[inline]
-    #[must_use]
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         Iban::try_from(address)
     }
