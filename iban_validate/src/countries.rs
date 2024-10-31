@@ -14,6 +14,7 @@ pub(super) enum CharacterType {
 
 impl CharacterType {
     #[inline]
+    #[must_use]
     fn matches(self, c: u8) -> bool {
         use CharacterType::{A, C, N};
         const MASK_CAPITAL: u8 = 0b0100_0000;
@@ -36,6 +37,7 @@ impl Matchable for &'_ [(usize, CharacterType)] {
     /// followed by their character type. For example, [(3, A) (2, N)] would
     /// mean three letters followed by two numbers. The string should also have
     /// the correct length.
+    #[must_use]
     fn match_str(self, s: &str) -> bool {
         s.len() == len(self)
             && self
@@ -47,6 +49,7 @@ impl Matchable for &'_ [(usize, CharacterType)] {
 }
 
 #[inline]
+#[must_use]
 fn len(a: &[(usize, CharacterType)]) -> usize {
     a.iter().map(|(count, _)| count).sum()
 }

@@ -33,6 +33,7 @@ pub trait IbanLike {
     /// assert_eq!(iban.electronic_str(), "DE44500105175407324931");
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[must_use]
     fn electronic_str(&self) -> &str;
 
     /// Get the country code of the IBAN. This method simply returns a slice of
@@ -46,6 +47,7 @@ pub trait IbanLike {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     fn country_code(&self) -> &str {
         &self.electronic_str()[0..2]
     }
@@ -62,6 +64,7 @@ pub trait IbanLike {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     fn check_digits_str(&self) -> &str {
         &self.electronic_str()[2..4]
     }
@@ -77,6 +80,7 @@ pub trait IbanLike {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     fn check_digits(&self) -> u8 {
         self.check_digits_str().parse().expect(
             "Could not parse check digits. Please create an issue at \
@@ -96,6 +100,7 @@ pub trait IbanLike {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     fn bban_unchecked(&self) -> &str {
         &self.electronic_str()[4..]
     }
@@ -103,6 +108,7 @@ pub trait IbanLike {
 
 impl IbanLike for Iban {
     #[inline]
+    #[must_use]
     fn electronic_str(&self) -> &str {
         self.base_iban.electronic_str()
     }
@@ -120,6 +126,7 @@ impl Iban {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     pub fn bban(&self) -> &str {
         self.bban_unchecked()
     }
@@ -135,6 +142,7 @@ impl Iban {
     /// # Ok::<(), ParseIbanError>(())
     /// ```
     #[inline]
+    #[must_use]
     pub fn bank_identifier(&self) -> Option<&str> {
         generated::bank_identifier(self.country_code())
             .map(|range| &self.electronic_str()[4..][range])
@@ -150,6 +158,7 @@ impl Iban {
     /// assert_eq!(iban.branch_identifier(), Some("2030"));
     /// # Ok::<(), ParseIbanError>(())
     /// ```
+    #[must_use]
     #[inline]
     pub fn branch_identifier(&self) -> Option<&str> {
         generated::branch_identifier(self.country_code())
@@ -159,6 +168,7 @@ impl Iban {
 
 impl From<Iban> for BaseIban {
     #[inline]
+    #[must_use]
     fn from(value: Iban) -> BaseIban {
         value.base_iban
     }
@@ -187,8 +197,8 @@ impl Display for Iban {
 ///
 /// A valid IBAN...
 /// - must start with two uppercase ASCII letters, followed
-/// by two digits, followed by any number of digits and ASCII
-/// letters.
+///   by two digits, followed by any number of digits and ASCII
+///   letters.
 /// - must have a valid checksum.
 /// - must contain no whitespace, or be in the paper format, where
 ///   characters are in space-separated groups of four.
@@ -272,6 +282,7 @@ pub enum ParseIbanError {
 
 impl From<ParseBaseIbanError> for ParseIbanError {
     #[inline]
+    #[must_use]
     fn from(source: ParseBaseIbanError) -> ParseIbanError {
         ParseIbanError::InvalidBaseIban { source }
     }
@@ -294,6 +305,7 @@ impl fmt::Display for ParseIbanError {
 
 impl Error for ParseIbanError {
     #[inline]
+    #[must_use]
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             ParseIbanError::InvalidBaseIban { source } => Some(source),
@@ -313,6 +325,7 @@ impl<'a> TryFrom<&'a str> for Iban {
     /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
     #[inline]
+    #[must_use]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
             .parse::<BaseIban>()
@@ -331,6 +344,7 @@ impl TryFrom<BaseIban> for Iban {
     /// returned. If the country format is invalid or unknown, the other
     /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
+    #[must_use]
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
         use countries::Matchable;
         generated::country_pattern(base_iban.country_code())
@@ -348,6 +362,7 @@ impl TryFrom<BaseIban> for Iban {
 impl str::FromStr for Iban {
     type Err = ParseIbanError;
     #[inline]
+    #[must_use]
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         Iban::try_from(address)
     }
@@ -363,6 +378,7 @@ impl Serialize for Iban {
 
 #[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Iban {
+    #[must_use]
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct IbanStringVisitor;
         use serde::de;

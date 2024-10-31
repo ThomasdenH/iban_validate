@@ -17,8 +17,8 @@ proptest! {
             assert_eq!(iban.country_code(), country_code);
             assert_eq!(iban.check_digits(), check_digits);
             assert_eq!(iban.bban(), bban);
-            iban.bank_identifier();
-            iban.branch_identifier();
+            let _ = iban.bank_identifier();
+            let _ = iban.branch_identifier();
 
             // Convert to string and parse again
             let print_string = iban.to_string();

@@ -196,7 +196,7 @@ use crate::countries::CharacterType;
 
 #[inline]
 pub(crate) fn country_pattern(country_code: &str) -> Option<&[(usize, CharacterType)]> {
-	use CharacterType::*;
+	use CharacterType::{A, C, N};
 	use core::borrow::Borrow;
 	match country_code {
 		"AD" => Some([(4, N), (4, N), (12, C)].borrow()),

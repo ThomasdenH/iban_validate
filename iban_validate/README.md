@@ -1,4 +1,4 @@
-# iban_validate
+# `iban_validate`
 
 [![Crates.io](https://img.shields.io/crates/v/iban_validate.svg)](https://crates.io/crates/iban_validate)
 ![test](https://github.com/ThomasdenH/iban_validate/actions/workflows/test.yml/badge.svg)
