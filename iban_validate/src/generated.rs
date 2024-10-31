@@ -192,6 +192,7 @@ pub(crate) fn branch_identifier(country_code: &str) -> Option<core::ops::Range<u
 
 use crate::countries::CharacterType;
 
+#[inline]
 pub(crate) fn country_pattern(country_code: &str) -> Option<&[(usize, CharacterType)]> {
 	use CharacterType::*;
 	use core::borrow::Borrow;

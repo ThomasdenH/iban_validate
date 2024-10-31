@@ -437,6 +437,7 @@ fn generate_format_match_arm(
         write,
         "use crate::countries::CharacterType;
 
+#[inline]
 pub(crate) fn country_pattern(country_code: &str) -> Option<&[(usize, CharacterType)]> {{
 \tuse CharacterType::*;
 \tuse core::borrow::Borrow;
