@@ -312,6 +312,7 @@ impl<'a> TryFrom<&'a str> for Iban {
     /// returned. If the country format is invalid or unknown, the other
     /// variants will be returned with the [`BaseIban`] giving
     /// access to some basic functionality nonetheless.
+    #[inline]
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         value
             .parse::<BaseIban>()
@@ -346,6 +347,7 @@ impl TryFrom<BaseIban> for Iban {
 
 impl str::FromStr for Iban {
     type Err = ParseIbanError;
+    #[inline]
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         Iban::try_from(address)
     }
@@ -353,6 +355,7 @@ impl str::FromStr for Iban {
 
 #[cfg(feature = "serde")]
 impl Serialize for Iban {
+    #[inline]
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.base_iban.serialize(serializer)
     }
