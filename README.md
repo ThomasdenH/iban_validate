@@ -5,9 +5,9 @@
 ![Generation code](https://github.com/ThomasdenH/iban_validate/actions/workflows/generation_code.yml/badge.svg)
 ![fmt & clippy](https://github.com/ThomasdenH/iban_validate/actions/workflows/fmt_and_clippy.yml/badge.svg)
 
-This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/4.0.1/iban/trait.IbanLike.html) trait.
+This crate provides an easy way to validate an IBAN (International Bank Account Number). To do so, you can use the function [`parse()`](https://doc.rust-lang.org/stable/std/primitive.str.html#method.parse). This will check the IBAN rules as well as the BBAN structure. The provided [`Iban`] structure provides many methods to easy the handling of an IBAN. Many of these methods are provided via the [`IbanLike`](https://docs.rs/iban_validate/5.0.1/iban/trait.IbanLike.html) trait.
 
-When BBAN parsing fails, the error type [`ParseIbanError`](https://docs.rs/iban_validate/4.0.1/iban/enum.ParseIbanError.html) provides useful information about what went wrong. Additionally, the error contains [`BaseIban`], which can still be used to access useful information.
+When BBAN parsing fails, the error type [`ParseIbanError`](https://docs.rs/iban_validate/5.0.1/iban/enum.ParseIbanError.html) provides useful information about what went wrong. Additionally, the error contains [`BaseIban`], which can still be used to access useful information.
 
 ## Example
 
@@ -21,7 +21,9 @@ fn main() -> Result<(), ParseIbanError> {
   assert_eq!(account.country_code(), "DE");
   assert_eq!(account.check_digits(), 44);
   assert_eq!(account.bban(), "500105175407324931");
+  // The electronic format is also returned through `Debug::fmt`
   assert_eq!(account.electronic_str(), "DE44500105175407324931");
+  // The pretty 'paper' format can be obtained via `Display::fmt`
   assert_eq!(account.to_string(), "DE44 5001 0517 5407 3249 31");
   assert_eq!(account.bank_identifier(), Some("50010517"));
   assert_eq!(account.branch_identifier(), None);
@@ -32,7 +34,7 @@ fn main() -> Result<(), ParseIbanError> {
 ## What does this library provide?
 
 - A [`Iban`] type that can be used to parse account numbers very quickly. It doesn't require allocations at all, and instead leverages [`arrayvec`](https://crates.io/crates/arrayvec) under the hood.
-- A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]. Instead of using panic, the crate provides typed errors with what went wrong.
+- A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]). Instead of using panic, the crate provides typed errors with what went wrong.
 - All functionality can be used in a `no_std` environment.
 - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
 - CI tested results via the Swift provided and custom test cases, as well as proptest.
@@ -45,7 +47,7 @@ dependency:
 
 ```toml
 [dependencies]
-iban_validate = "4"
+iban_validate = "5"
 ```
 
 ## Features
@@ -60,7 +62,7 @@ If you experience issues with this crate or want to help, please look [here](htt
 
 ## Stability
 
-This crate is usable on the latest stable release of the Rust compiler and adheres to semver.
+This crate is usable on the latest stable release of the Rust compiler and adheres to semver. The IBAN registry may be updated with patch releases, because of this results may differ even between patch versions.
 
 ## License
 
@@ -79,5 +81,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
-[`iban`]: https://docs.rs/iban_validate/4.0.1/iban/struct.Iban.html
-[`baseiban`]: https://docs.rs/iban_validate/4.0.1/iban/struct.BaseIban.html
+[`iban`]: https://docs.rs/iban_validate/5.0.1/iban/struct.Iban.html
+[`baseiban`]: https://docs.rs/iban_validate/5.0.1/iban/struct.BaseIban.html
