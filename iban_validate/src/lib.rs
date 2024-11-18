@@ -18,6 +18,8 @@ mod generated;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+mod randomize;
+
 pub use base_iban::{BaseIban, ParseBaseIbanError};
 
 /// A trait that provide basic functions on an IBAN. It is implemented by both [`Iban`],
@@ -163,6 +165,48 @@ impl Iban {
     pub fn branch_identifier(&self) -> Option<&str> {
         generated::branch_identifier(self.country_code())
             .map(|range| &self.electronic_str()[4..][range])
+    }
+
+    #[cfg(any(feature = "arbitrary", feature = "rand"))]
+    #[inline]
+    fn generate_random<Generator: crate::randomize::RandomGeneration + ?Sized>(
+        generator: &mut Generator,
+    ) -> Result<Self, Generator::Error> {
+        use crate::base_iban::{set_checksum, MAX_IBAN_LEN};
+        use arrayvec::{ArrayString, ArrayVec};
+        use generated::{country_pattern, COUNTRY_CODES};
+
+        let mut s = ArrayVec::<u8, MAX_IBAN_LEN>::new();
+        // Generate the country code
+        let country_code = COUNTRY_CODES[usize::from(generator.gen_u16_range(
+            0..=u16::try_from(COUNTRY_CODES.len()).expect("index should be u16") - 1,
+        )?)];
+
+        s.push(country_code.as_bytes()[0]);
+        s.push(country_code.as_bytes()[1]);
+
+        // Keep the check digits empty for now
+        s.push(b'0');
+        s.push(b'0');
+
+        for (count, char_type) in country_pattern(country_code).expect("this should never fail") {
+            for _ in 0..*count {
+                s.push(generator.generate_digit(*char_type)?);
+            }
+        }
+
+        set_checksum(s.as_mut_slice());
+
+        // Check that the IBAN is valid in debug mode
+        let s: ArrayString<MAX_IBAN_LEN> = str::from_utf8(s.as_slice())
+            .expect("should be valid utf8")
+            .try_into()
+            .expect("should have the correct size");
+
+        // Return this IBAN
+        Ok(Iban {
+            base_iban: BaseIban { s },
+        })
     }
 }
 
@@ -423,5 +467,52 @@ impl<'de> Deserialize<'de> for Iban {
         }
 
         deserializer.deserialize_str(IbanStringVisitor)
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl<'a> arbitrary::Arbitrary<'a> for Iban {
+    fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
+        Iban::generate_random(&mut crate::randomize::ArbitraryRandomGeneration(u))
+    }
+}
+
+#[cfg(feature = "rand")]
+mod rand {
+    use crate::Iban;
+    use rand::distributions::{Distribution, Standard};
+
+    impl Distribution<Iban> for Standard {
+        fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Iban {
+            Iban::generate_random(&mut crate::randomize::RandRandomGeneration(rng))
+                .expect("random generation cannot fail")
+        }
+    }
+}
+
+#[cfg(feature = "proptest")]
+mod proptest {
+    use crate::{base_iban::MAX_IBAN_LEN, Iban};
+    use arbitrary::{Arbitrary, Unstructured};
+    use proptest::{
+        prelude::{any, BoxedStrategy},
+        prop_compose,
+        strategy::Strategy,
+    };
+
+    prop_compose! {
+        #[inline]
+        fn proptest_from_bytes()(bytes in any::<[u8; MAX_IBAN_LEN - 4]>()) -> Iban {
+            // Use the existing implementation from Arbitrary
+            Iban::arbitrary(&mut Unstructured::new(&bytes)).expect("random generation cannot fail")
+        }
+    }
+
+    impl proptest::arbitrary::Arbitrary for Iban {
+        type Parameters = ();
+        type Strategy = BoxedStrategy<Iban>;
+        fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+            proptest_from_bytes().boxed()
+        }
     }
 }

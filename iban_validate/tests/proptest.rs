@@ -57,3 +57,41 @@ proptest! {
         let _ = s.parse::<Iban>();
     }
 }
+
+proptest! {
+    #[test]
+    #[cfg(feature = "arbitrary")]
+    fn arbitrary_base_iban_generation(bytes in prop::collection::vec(prop::num::u8::ANY, 0..34)) {
+        use arbitrary::{Unstructured, Arbitrary};
+        let mut u = Unstructured::new(&bytes);
+        let _iban = <BaseIban as Arbitrary>::arbitrary(&mut u).expect("bytes should be enough");
+    }
+}
+
+proptest! {
+    #[test]
+    #[cfg(feature = "proptest")]
+    fn proptest_base_iban_generation(iban in any::<BaseIban>()) {
+        let _: BaseIban = iban.electronic_str().parse().unwrap();
+        let _: BaseIban = iban.to_string().parse().unwrap();
+    }
+}
+
+proptest! {
+    #[test]
+    #[cfg(feature = "arbitrary")]
+    fn arbitrary_iban_generation(bytes in prop::collection::vec(prop::num::u8::ANY, 0..34)) {
+        use arbitrary::{Unstructured, Arbitrary};
+        let mut u = Unstructured::new(&bytes);
+        let _iban = <Iban as Arbitrary>::arbitrary(&mut u).expect("bytes should be enough");
+    }
+}
+
+proptest! {
+    #[test]
+    #[cfg(feature = "proptest")]
+    fn proptest_iban_generation(iban in any::<Iban>()) {
+        let _: Iban = iban.electronic_str().parse().unwrap();
+        let _: Iban = iban.to_string().parse().unwrap();
+    }
+}

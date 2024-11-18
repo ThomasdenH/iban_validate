@@ -20,17 +20,30 @@ name = "iban"
 path = "src/lib.rs"
 
 [features]
-default = []
+proptest = ["dep:proptest", "arbitrary"]
+default = ["proptest", "rand"]
 
 # Enables all features when building documentation
 [package.metadata.docs.rs]
-features = ["serde"]
+features = ["serde", "arbitrary", "proptest", "rand"]
 
 [dependencies.serde]
 version = "1"
 optional = true
 default-features = false
 features = ["derive"]
+
+[dependencies.arbitrary]
+version = "1.3"
+optional = true
+
+[dependencies.rand]
+version = "0.8"
+optional = true
+
+[dependencies.proptest]
+version = "1"
+optional = true
 
 [dependencies.arrayvec]
 version = "0.7"
@@ -41,6 +54,7 @@ proptest = "1"
 static_assertions = "1"
 serde_test = "1"
 criterion = "0.3"
+rand = { version = "0.8", features = ["small_rng"]}
 
 [[bench]]
 name = "iban_benchmark"

@@ -3,7 +3,7 @@ use crate::IbanLike;
 use crate::{Iban, ParseIbanError};
 use arrayvec::ArrayString;
 use core::fmt::{self, Debug, Display};
-use core::str::FromStr;
+use core::str::{self, FromStr};
 use core::{convert::TryFrom, error::Error};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -14,7 +14,7 @@ const PAPER_GROUP_SIZE: usize = 4;
 /// The maximum length an IBAN can be, according to the spec. This variable is
 /// used for the capacity of the arrayvec, which in turn determines how long a
 /// valid IBAN can be.
-const MAX_IBAN_LEN: usize = 34;
+pub(crate) const MAX_IBAN_LEN: usize = 34;
 
 /// Represents an IBAN that passed basic checks, but not necessarily the BBAN
 /// validation. This corresponds to the validation as described in ISO 13616-1.
@@ -90,7 +90,7 @@ pub struct BaseIban {
     /// The string representing the IBAN. The string contains only uppercase
     /// ASCII and digits and no whitespace. It starts with two letters followed
     /// by two digits.
-    s: ArrayString<MAX_IBAN_LEN>,
+    pub(crate) s: ArrayString<MAX_IBAN_LEN>,
 }
 
 #[cfg(feature = "serde")]
@@ -217,42 +217,63 @@ impl AsMut<ParseBaseIbanError> for ParseBaseIbanError {
     }
 }
 
+/// Compute the checksum for a string. For a valid IBAN, this should be 1.
+#[inline]
+fn compute_checksum(s: &[u8]) -> u16 {
+    s.iter()
+        // Move the first four characters to the back
+        .cycle()
+        .skip(4)
+        .take(s.len())
+        // Calculate the checksum
+        .fold(0_u16, |acc, &c| {
+            const MASK_DIGIT: u8 = 0b0010_0000;
+
+            debug_assert!(
+                char::from(c).is_digit(36),
+                "An address was supplied to compute_checksum with an invalid \
+                character. Please file an issue at \
+                https://github.com/ThomasdenH/iban_validate."
+            );
+
+            // We expect only '0'-'9' and 'A'-'Z', so we can use a mask for
+            // faster testing.
+            (if c & MASK_DIGIT != 0 {
+                // '0' - '9'. We should multiply the accumulator by 10 and
+                // add this value.
+                (acc * 10) + u16::from(c - b'0')
+            } else {
+                // 'A' - 'Z'. We should multiply the accumulator by 100 and
+                // add this value.
+                // Note: We can multiply by (100 % 97) = 3 instead. This
+                // doesn't impact performance though, so or simplicity we
+                // use 100.
+                (acc * 100) + u16::from(c - b'A' + 10)
+            }) % 97
+        })
+}
+
+/// Compute what the checksum should be. The input is a an IBAN string, but
+/// with "00" instead of the check digits. These will be replaced by a valid
+/// checksum.
+#[inline]
+#[cfg(any(feature = "arbitrary", feature = "rand"))]
+pub(crate) fn set_checksum(s: &mut [u8]) {
+    debug_assert_eq!(&s[2..4], b"00");
+    let current_checksum = compute_checksum(s);
+    // We want to add something to the current checksum so that it becomes 1.
+    let checksum = 98 - current_checksum;
+    debug_assert!((2..=98).contains(&checksum));
+    s[2] = b'0' + (checksum / 10) as u8;
+    s[3] = b'0' + (checksum % 10) as u8;
+}
+
 impl BaseIban {
     /// Compute the checksum for the address. The code that the string contains
     /// only valid characters: `'0'..='9'` and `'A'..='Z'`.
     #[must_use]
     fn validate_checksum(address: &str) -> bool {
-        address
-            .as_bytes()
-            .iter()
-            // Move the first four characters to the back
-            .cycle()
-            .skip(4)
-            .take(address.len())
-            // Calculate the checksum
-            .fold(0_u16, |acc, &c| {
-                const MASK_DIGIT: u8 = 0b0010_0000;
-
-                debug_assert!(char::from(c).is_digit(36), "An address was supplied to compute_checksum with an invalid \
-                character. Please file an issue at \
-                https://github.com/ThomasdenH/iban_validate.");
-
-                // We expect only '0'-'9' and 'A'-'Z', so we can use a mask for
-                // faster testing.
-                (if c & MASK_DIGIT != 0 {
-                    // '0' - '9'. We should multiply the accumulator by 10 and
-                    // add this value.
-                    (acc * 10) + u16::from(c - b'0')
-                } else {
-                    // 'A' - 'Z'. We should multiply the accumulator by 100 and
-                    // add this value.
-                    // Note: We can multiply by (100 % 97) = 3 instead. This
-                    // doesn't impact performance though, so or simplicity we
-                    // use 100.
-                    (acc * 100) + u16::from(c - b'A' + 10)
-                }) % 97
-            })
-            == 1 &&
+        compute_checksum(address.as_bytes()) == 1 &&
             // Check digits with value 01 or 00 are invalid!
             &address[2..4] != "00" && 
             &address[2..4] != "01"
@@ -346,6 +367,40 @@ impl BaseIban {
                 .copied(),
         )
     }
+
+    #[cfg(any(feature = "arbitrary", feature = "rand"))]
+    #[inline]
+    fn generate_random<Generator: crate::randomize::RandomGeneration + ?Sized>(
+        generator: &mut Generator,
+    ) -> Result<Self, Generator::Error> {
+        use crate::countries::CharacterType;
+        use arrayvec::ArrayVec;
+
+        let mut s = ArrayVec::<u8, MAX_IBAN_LEN>::new();
+        // Generate the country code
+        s.push(generator.generate_digit(CharacterType::A)?);
+        s.push(generator.generate_digit(CharacterType::A)?);
+
+        // Keep the check digits empty for now
+        s.push(b'0');
+        s.push(b'0');
+
+        // We will generate IBANs from length 5 up until MAX_IBAN_LEN
+        for _ in 0..generator.generate_iban_len()? {
+            s.push(generator.generate_digit(CharacterType::C)?);
+        }
+
+        set_checksum(s.as_mut_slice());
+
+        // Check that the IBAN is valid in debug mode
+        let s: ArrayString<MAX_IBAN_LEN> = str::from_utf8(s.as_slice())
+            .expect("should be valid utf8")
+            .try_into()
+            .expect("should have the correct size");
+
+        // Return this IBAN
+        Ok(BaseIban { s })
+    }
 }
 
 impl FromStr for BaseIban {
@@ -394,5 +449,52 @@ impl AsRef<BaseIban> for BaseIban {
 impl AsMut<BaseIban> for BaseIban {
     fn as_mut(&mut self) -> &mut BaseIban {
         self
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl<'a> arbitrary::Arbitrary<'a> for BaseIban {
+    fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
+        BaseIban::generate_random(&mut crate::randomize::ArbitraryRandomGeneration(u))
+    }
+}
+
+#[cfg(feature = "rand")]
+mod rand {
+    use super::BaseIban;
+    use rand::distributions::{Distribution, Standard};
+
+    impl Distribution<BaseIban> for Standard {
+        fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> BaseIban {
+            BaseIban::generate_random(&mut crate::randomize::RandRandomGeneration(rng))
+                .expect("random generation cannot fail")
+        }
+    }
+}
+
+#[cfg(feature = "proptest")]
+mod proptest {
+    use super::{BaseIban, MAX_IBAN_LEN};
+    use arbitrary::{Arbitrary, Unstructured};
+    use proptest::{
+        prelude::{any, BoxedStrategy},
+        prop_compose,
+        strategy::Strategy,
+    };
+
+    prop_compose! {
+        #[inline]
+        fn proptest_from_bytes()(bytes in any::<[u8; MAX_IBAN_LEN - 4]>()) -> BaseIban {
+            // Use the existing implementation from Arbitrary
+            BaseIban::arbitrary(&mut Unstructured::new(&bytes)).expect("random generation cannot fail")
+        }
+    }
+
+    impl proptest::arbitrary::Arbitrary for BaseIban {
+        type Parameters = ();
+        type Strategy = BoxedStrategy<BaseIban>;
+        fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+            proptest_from_bytes().boxed()
+        }
     }
 }
