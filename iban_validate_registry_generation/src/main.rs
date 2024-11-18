@@ -311,6 +311,8 @@ fn main() -> anyhow::Result<()> {
     generate_branch_identifier_position_in_bban_match_arm(&mut generated_file, &registry)?;
     writeln!(generated_file)?;
     generate_format_match_arm(&mut generated_file, &registry)?;
+    writeln!(generated_file)?;
+    generate_country_codes(&mut generated_file, &registry)?;
 
     // Generate this file with test cases.
     let mut generated_file = File::create("../iban_validate/tests/registry_examples_generated.rs")?;
@@ -345,6 +347,24 @@ pub(crate) fn bank_identifier(country_code: &str) -> Option<core::ops::Range<usi
     }
     writeln!(writer, "\t\t_ => None,")?;
     writeln!(writer, "\t}}\n}}")?;
+    Ok(())
+}
+
+/// Generate a list with country codes.
+fn generate_country_codes(
+    writer: &mut impl Write,
+    contents: &RegistryReader,
+) -> anyhow::Result<()> {
+    writeln!(
+        writer,
+        "/// A list with all the country codes with IBANs\n\
+#[cfg(any(feature = \"proptest\", feature = \"arbitrary\", feature = \"rand\"))]
+pub(crate) static COUNTRY_CODES: &[&str] = &["
+    )?;
+    for RegistryRecord { country_code, .. } in &contents.records {
+        writeln!(writer, "\t\"{country_code}\",")?;
+    }
+    writeln!(writer, "];")?;
     Ok(())
 }
 
