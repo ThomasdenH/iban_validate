@@ -197,7 +197,7 @@ use crate::countries::CharacterType;
 #[inline]
 pub(crate) fn country_pattern(country_code: &str) -> Option<&[(usize, CharacterType)]> {
     use core::borrow::Borrow;
-    use CharacterType::{A, C, N};
+    use CharacterType::*;
     match country_code {
         "AD" => Some([(4, N), (4, N), (12, C)].borrow()),
         "AE" => Some([(3, N), (16, N)].borrow()),
@@ -289,3 +289,14 @@ pub(crate) fn country_pattern(country_code: &str) -> Option<&[(usize, CharacterT
         _ => None,
     }
 }
+
+/// A list with all the country codes with IBANs
+#[cfg(any(feature = "proptest", feature = "arbitrary", feature = "rand"))]
+pub(crate) static COUNTRY_CODES: &[&str] = &[
+    "AD", "AE", "AL", "AT", "AZ", "BA", "BE", "BG", "BH", "BI", "BR", "BY", "CH", "CR", "CY", "CZ",
+    "DE", "DJ", "DK", "DO", "EE", "EG", "ES", "FI", "FK", "FO", "FR", "GB", "GE", "GI", "GL", "GR",
+    "GT", "HR", "HU", "IE", "IL", "IQ", "IS", "IT", "JO", "KW", "KZ", "LB", "LC", "LI", "LT", "LU",
+    "LV", "LY", "MC", "MD", "ME", "MK", "MN", "MR", "MT", "MU", "NI", "NL", "NO", "OM", "PL", "PS",
+    "PT", "QA", "RO", "RS", "RU", "SA", "SC", "SD", "SE", "SI", "SK", "SM", "SO", "ST", "SV", "TL",
+    "TN", "TR", "UA", "VA", "VG", "XK", "YE",
+];

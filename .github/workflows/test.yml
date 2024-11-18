@@ -13,9 +13,19 @@ jobs:
           - nightly
         features:
           - ""
-          - --no-default-features
-          - "--no-default-features --features serde"
           - "--features serde"
+          - "--features rand"
+          - "--features proptest"
+          - "--features arbitrary"
+          - "--features serde rand"
+          - "--features rand proptest"
+          - "--features proptest arbitrary"
+          - "--features arbitrary serde"
+          - "--features serde rand proptest"
+          - "--features rand proptest arbitrary"
+          - "--features proptest arbitrary serde"
+          - "--features arbitrary serde rand"
+          - "--features arbitrary serde rand proptest"
         command:
           - build
           - test
