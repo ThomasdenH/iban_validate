@@ -40,7 +40,7 @@ default-features = false
 proptest = "1"
 static_assertions = "1"
 serde_test = "1"
-criterion = "0.3"
+criterion = "0.5"
 
 [[bench]]
 name = "iban_benchmark"
