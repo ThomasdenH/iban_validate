@@ -37,7 +37,7 @@ fn main() -> Result<(), ParseIbanError> {
 - A flexible API that is useful even when the country is not in the Swift registry (using [`BaseIban`]). Instead of using panic, the crate provides typed errors with what went wrong.
 - All functionality can be used in a `no_std` environment.
 - Optional serialization and deserialization via [`serde`](https://crates.io/crates/serde).
-- Optional memory zeroization of [`BaseIban`] via [`zeroize`](https://crates.io/crates/zeroize).
+- Optional memory zeroization when [`BaseIban`] is dropped via [`zeroize`](https://crates.io/crates/zeroize).
 - CI tested results via the Swift provided and custom test cases, as well as proptest.
 - `#![forbid(unsafe_code)]`, making sure all code is written in safe Rust.
 
@@ -56,7 +56,7 @@ iban_validate = "5"
 The following features can be used to configure the crate:
 
 - _serde_: Enable `serde` support for [`Iban`] and [`BaseIban`].
-- _zeroize_: Enable `zeroize` support for the [`BaseIban`] only.
+- _zeroize_: Support `ZeroizeOnDrop` for the [`BaseIban`].
 
 ## Contributing
 

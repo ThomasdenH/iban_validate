@@ -5,10 +5,11 @@ use core::hash::Hash;
 use core::str::FromStr;
 use iban::{BaseIban, Iban, ParseBaseIbanError, ParseIbanError};
 use static_assertions::assert_impl_all;
+#[cfg(feature = "zeroize")]
+use zeroize::ZeroizeOnDrop;
 
 assert_impl_all!(
-    BaseIban: Copy,
-    Clone,
+    BaseIban: Clone,
     Eq,
     PartialEq,
     Hash,
@@ -23,8 +24,7 @@ assert_impl_all!(
     AsMut<BaseIban>
 );
 assert_impl_all!(
-    Iban: Copy,
-    Clone,
+    Iban: Clone,
     Eq,
     PartialEq,
     Hash,
@@ -43,8 +43,7 @@ assert_impl_all!(
     AsMut<Iban>
 );
 assert_impl_all!(
-    ParseBaseIbanError: Copy,
-    Clone,
+    ParseBaseIbanError: Clone,
     Eq,
     PartialEq,
     Hash,
@@ -57,8 +56,7 @@ assert_impl_all!(
     AsMut<ParseBaseIbanError>
 );
 assert_impl_all!(
-    ParseIbanError: Copy,
-    Clone,
+    ParseIbanError: Clone,
     Eq,
     PartialEq,
     Hash,
@@ -73,6 +71,17 @@ assert_impl_all!(
 
 assert_impl_all!(ParseBaseIbanError: core::error::Error);
 assert_impl_all!(ParseIbanError: core::error::Error);
+
+#[cfg(not(feature = "zeroize"))]
+assert_impl_all!(BaseIban: Copy);
+#[cfg(not(feature = "zeroize"))]
+assert_impl_all!(Iban: Copy);
+#[cfg(not(feature = "zeroize"))]
+assert_impl_all!(ParseBaseIbanError: Copy);
+#[cfg(not(feature = "zeroize"))]
+assert_impl_all!(ParseIbanError: Copy);
+#[cfg(feature = "zeroize")]
+assert_impl_all!(BaseIban: ZeroizeOnDrop);
 
 #[cfg(feature = "serde")]
 mod impls_serde {

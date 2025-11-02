@@ -8,9 +8,7 @@ use core::{convert::TryFrom, error::Error};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "zeroize")]
-use zeroize::Zeroize;
-#[cfg(feature = "zeroize")]
-use zeroize_derive::Zeroize;
+use zeroize_derive::ZeroizeOnDrop;
 
 /// The size of a group of characters in the paper format.
 const PAPER_GROUP_SIZE: usize = 4;
@@ -89,8 +87,19 @@ const MAX_IBAN_LEN: usize = 34;
 /// assert_eq!(&format!("{}", iban), "RO66 BACX 0000 0012 3456 7890");
 /// # Ok::<(), ParseBaseIbanError>(())
 /// ```
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "zeroize", derive(Zeroize))]
+///
+/// ## Zeroization
+/// If the `zeroize` feature is enabled, then both `BaseIban` itself
+/// and temporary objects used during parsing will be zeroed
+/// when they go out of scope. This can help to
+/// prevent sensitive data from lingering in memory.
+///
+/// NOTICE that zeroization is NOT compatible to `Copy` trait,
+/// that's why the `BaseIban` does not implement `Copy`
+/// when the "zeroize" feature is enabled.
+#[derive(Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(not(feature = "zeroize"), derive(Copy))]
+#[cfg_attr(feature = "zeroize", derive(ZeroizeOnDrop))]
 pub struct BaseIban {
     /// The string representing the IBAN. The string contains only uppercase
     /// ASCII and digits and no whitespace. It starts with two letters followed
@@ -269,41 +278,37 @@ impl BaseIban {
     ///
     /// SECURITY: If the `zeroized` feature is turned on, then all temporary
     /// objects are zeroized in the memory.
-    fn try_form_string_from_electronic<T>(
-        mut chars: T,
-    ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError>
+    fn try_form_string_from_electronic<T>(mut chars: T) -> Result<Self, ParseBaseIbanError>
     where
         T: Iterator<Item = u8>,
     {
-        let mut address_no_spaces = ArrayString::<MAX_IBAN_LEN>::new();
+        let mut output = Self {
+            s: ArrayString::<MAX_IBAN_LEN>::new(),
+        };
 
         // First expect exactly two uppercase letters and append them to the
         // string.
         for _ in 0..2 {
-            let Some(c) = chars.next().filter(u8::is_ascii_uppercase) else {
-                #[cfg(feature = "zeroize")]
-                address_no_spaces.zeroize();
-                return Err(ParseBaseIbanError::InvalidFormat);
-            };
-            if address_no_spaces.try_push(c as char).is_err() {
-                #[cfg(feature = "zeroize")]
-                address_no_spaces.zeroize();
-                return Err(ParseBaseIbanError::InvalidFormat);
-            }
+            let c = chars
+                .next()
+                .filter(u8::is_ascii_uppercase)
+                .ok_or(ParseBaseIbanError::InvalidFormat)?;
+            output
+                .s
+                .try_push(c as char)
+                .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
         // Now expect exactly two digits.
         for _ in 0..2 {
-            let Some(c) = chars.next().filter(u8::is_ascii_digit) else {
-                #[cfg(feature = "zeroize")]
-                address_no_spaces.zeroize();
-                return Err(ParseBaseIbanError::InvalidFormat);
-            };
-            if address_no_spaces.try_push(c as char).is_err() {
-                #[cfg(feature = "zeroize")]
-                address_no_spaces.zeroize();
-                return Err(ParseBaseIbanError::InvalidFormat);
-            }
+            let c = chars
+                .next()
+                .filter(u8::is_ascii_digit)
+                .ok_or(ParseBaseIbanError::InvalidFormat)?;
+            output
+                .s
+                .try_push(c as char)
+                .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
         }
 
         // Finally take up to 30 other characters. The BBAN part can actually
@@ -312,25 +317,20 @@ impl BaseIban {
         // destination string.
         for c in chars {
             if c.is_ascii_alphanumeric() {
-                if address_no_spaces.try_push(c.to_ascii_uppercase() as char).is_err() {
-                    #[cfg(feature = "zeroize")]
-                    address_no_spaces.zeroize();
-                    return Err(ParseBaseIbanError::InvalidFormat);
-                }
+                output
+                    .s
+                    .try_push(c.to_ascii_uppercase() as char)
+                    .map_err(|_| ParseBaseIbanError::InvalidFormat)?;
             } else {
-                #[cfg(feature = "zeroize")]
-                address_no_spaces.zeroize();
                 return Err(ParseBaseIbanError::InvalidFormat);
             }
         }
 
-        Ok(address_no_spaces)
+        Ok(output)
     }
 
     /// Parse a pretty print 'paper' IBAN from a `str`.
-    fn try_form_string_from_pretty_print(
-        s: &str,
-    ) -> Result<ArrayString<MAX_IBAN_LEN>, ParseBaseIbanError> {
+    fn try_form_string_from_pretty_print(s: &str) -> Result<Self, ParseBaseIbanError> {
         // The pretty print format consists of a number of groups of four
         // characters, separated by a space.
 
@@ -375,19 +375,14 @@ impl FromStr for BaseIban {
     /// invalid, an [`ParseBaseIbanError`](crate::ParseBaseIbanError) will be
     /// returned.
     fn from_str(address: &str) -> Result<Self, Self::Err> {
-        let mut address_no_spaces =
-            BaseIban::try_form_string_from_electronic(address.as_bytes().iter().copied())
-                .or_else(|_| BaseIban::try_form_string_from_pretty_print(address))?;
+        let output = BaseIban::try_form_string_from_electronic(address.as_bytes().iter().copied())
+            .or_else(|_| BaseIban::try_form_string_from_pretty_print(address))?;
 
-        if !BaseIban::validate_checksum(&address_no_spaces) {
-            #[cfg(feature = "zeroize")]
-            address_no_spaces.zeroize();
-            return Err(ParseBaseIbanError::InvalidChecksum);
+        if BaseIban::validate_checksum(&output.s) {
+            Ok(output)
+        } else {
+            Err(ParseBaseIbanError::InvalidChecksum)
         }
-
-        Ok(BaseIban {
-            s: address_no_spaces,
-        })
     }
 }
 
