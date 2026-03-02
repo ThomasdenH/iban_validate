@@ -235,7 +235,16 @@ impl Display for Iban {
 /// # Ok::<(), ParseIbanError>(())
 /// ```
 /// [`parse()`]: https://doc.rust-lang.org/std/primitive.str.html#method.parse
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+///
+/// ## Zeroization
+/// If the `zeroize` feature is enabled, then a `BaseIban`
+/// wrapped by the `Iban` will be zeroed upon a drop.
+///
+/// NOTICE that zeroization is NOT compatible to `Copy` trait,
+/// that's why the `Iban` does not implement `Copy`
+/// when the "zeroize" feature is enabled.
+#[derive(Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(not(feature = "zeroize"), derive(Copy))]
 pub struct Iban {
     /// The inner IBAN, which has been checked.
     base_iban: BaseIban,
@@ -257,13 +266,22 @@ pub struct Iban {
 /// // The following IBAN doesn't follow the country format
 /// let base_iban: BaseIban = "AL84212110090000AB023569874".parse()?;
 /// assert_eq!(
-///     Iban::try_from(base_iban),
+///     Iban::try_from(base_iban.clone()),
 ///     Err(ParseIbanError::InvalidBban(base_iban))
 /// );
 /// # Ok::<(), ParseBaseIbanError>(())
 /// ```
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
+///
+/// ## Zeroization
+/// If the `zeroize` feature is enabled, then the `BaseIban`
+/// wrapped by the `ParseIbanError` will be zeroed upon a drop.
+///
+/// NOTICE that zeroization is NOT compatible to `Copy` trait,
+/// that's why the `ParseIbanError` does not implement `Copy`
+/// when the "zeroize" feature is enabled.
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(not(feature = "zeroize"), derive(Copy))]
 pub enum ParseIbanError {
     /// This variant indicates that the basic IBAN structure was not followed.
     InvalidBaseIban {
@@ -357,15 +375,24 @@ impl TryFrom<BaseIban> for Iban {
     /// access to some basic functionality nonetheless.
     fn try_from(base_iban: BaseIban) -> Result<Iban, ParseIbanError> {
         use countries::Matchable;
-        generated::country_pattern(base_iban.country_code())
-            .ok_or(ParseIbanError::UnknownCountry(base_iban))
-            .and_then(|matcher: &[(usize, _)]| {
-                if matcher.match_str(base_iban.bban_unchecked()) {
-                    Ok(Iban { base_iban })
-                } else {
-                    Err(ParseIbanError::InvalidBban(base_iban))
-                }
-            })
+
+        #[cfg(not(feature = "zeroize"))]
+        let pattern = generated::country_pattern(base_iban.country_code())
+            .ok_or(ParseIbanError::UnknownCountry(base_iban));
+
+        #[cfg(feature = "zeroize")]
+        let binding = base_iban.clone();
+        #[cfg(feature = "zeroize")]
+        let pattern = generated::country_pattern(binding.country_code())
+            .ok_or(ParseIbanError::UnknownCountry(base_iban.clone()));
+
+        pattern.and_then(|matcher: &[(usize, _)]| {
+            if matcher.match_str(base_iban.bban_unchecked()) {
+                Ok(Iban { base_iban })
+            } else {
+                Err(ParseIbanError::InvalidBban(base_iban))
+            }
+        })
     }
 }
 

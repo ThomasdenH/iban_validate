@@ -13,7 +13,7 @@ fn test_as_ref() -> Result<(), Box<dyn Error>> {
         base_iban.to_string()
     }
 
-    let s = pretty_format(iban);
+    let s = pretty_format(&iban);
     assert_eq!(s.as_str(), "KW81 CBKU 0000 0000 0000 1234 5601 01");
     assert_eq!(iban.to_string(), s);
 
